@@ -11,6 +11,20 @@ Inductive tDfa: Type :=
 | DPlus: tDfa -> tDfa -> tDfa
 | DMult: tDfa -> tDfa -> tDfa.
 
+Fixpoint tNfaDenote (s: tNfa): Type :=
+  match s with
+  | NZero => unit
+  | NOne => unit + unit
+  | NPlus a b => (tNfaDenote a) * (tNfaDenote b)
+  end.
+
+Fixpoint tDfaDenote (s: tDfa): Type :=
+  match s with
+	| DOne => unit
+	| DPlus a b => (tDfaDenote a) + (tDfaDenote b)
+	| DMult a b => (tDfaDenote a) * (tDfaDenote b)
+	end.
+
 Fixpoint pset (s: tNfa): tDfa :=
   match s with
   | NZero => DOne
