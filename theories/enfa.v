@@ -8,9 +8,12 @@ Record t {A: Type}: Type := mkEnfa {
   state: state.tNfa;
   start: {set nfa⟦state⟧};
   final: {set nfa⟦state⟧};
-  tf: nfa⟦state⟧ -> option A -> nfa⟦state⟧ -> bool
+  tf: option A -> nfa⟦state⟧ -> nfa⟦state⟧ -> bool
 }.
 Arguments t: clear implicits.
+
+Definition eps_closure {A: Type}
+  (n: t A)(src: nfa⟦state n⟧) := [set dst | connect ((tf n) None) src dst].
 
 Section FAs.
   Context {A: finType}.
@@ -19,7 +22,7 @@ Section FAs.
     state := state.NZero;
     start := set0;
     final := set0;
-    tf src ch dst := false
+    tf ch src dst := false
   |}.
   Defined.
 
@@ -27,7 +30,7 @@ Section FAs.
     state := state.NOne;
     start := [set tt];
     final := [set tt];
-    tf src ch dst :=
+    tf ch src dst :=
       match ch with
       | None => true
       | Some c => false
@@ -39,7 +42,7 @@ Section FAs.
     state := state.NPlus state.NOne state.NOne;
     start := [set (inl tt)];
     final := [set (inr tt)];
-    tf src ch dst :=
+    tf ch src dst :=
       match ch with
       | None => src == dst
       | Some c =>
@@ -55,10 +58,10 @@ Section FAs.
     state := state.NPlus (state n1) (state n2);
     start := inl @: start n1;
     final := inr @: final n2;
-    tf src ch dst :=
+    tf ch src dst :=
       match src, ch, dst with
-      | inl s, Some _, inl d => (tf n1) s ch d 
-      | inr s, Some _, inr d => (tf n2) s ch d 
+      | inl s, Some _, inl d => (tf n1) ch s d 
+      | inr s, Some _, inr d => (tf n2) ch s d 
       | inl s, None, inr d =>
           (s \in (final n1)) && (d \in (start n2))
       | _, _, _ => false
@@ -70,13 +73,13 @@ Section FAs.
     state := state.NPlus (state n1) (state n2);
     start := (inl @: start n1) :|: (inr @: start n2);
     final := (inl @: (start n1)) :|: (inr @: (start n2));
-    tf src ch dst := 
+    tf ch src dst := 
       match ch with
       | None => src == dst
       | Some c =>
           match src, dst with
-          | inl s, inl d => (tf n1) s ch d
-          | inr s, inr d => (tf n2) s ch d
+          | inl s, inl d => (tf n1) ch s d
+          | inr s, inr d => (tf n2) ch s d
           | _, _ => false
           end
       end
@@ -87,7 +90,7 @@ Section FAs.
     state := state.NPlus state.NOne (state n);
     start := [set (inl tt)];
     final := [set (inl tt)];
-    tf src ch dst :=
+    tf ch src dst :=
       match src, ch, dst with
       | inl _, None, inl _ => true
       (* | inl _, Some _, inl _ => false *)
@@ -96,7 +99,7 @@ Section FAs.
       | inr s, None, inl _ => s \in (final n)
       (* | inr s, Some _, inl _ => s \in (final n) *)
       | inr s, None, inr d => s == d
-      | inr s, Some _, inr d => (tf n) s ch d
+      | inr s, Some _, inr d => (tf n) ch s d
       | _, _, _ => false
       end
   |}.
