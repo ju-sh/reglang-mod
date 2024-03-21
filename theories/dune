@@ -1,6 +1,5 @@
 (coq.theory
  (name aruvi)
- (synopsis "A coq library for streams and their hardware realisation")
- (theories coqci)
-)
+ (synopsis "A coq library for streams and their hardware realisation"))
+
 (include_subdirs qualified)
