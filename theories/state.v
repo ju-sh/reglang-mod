@@ -19,16 +19,17 @@ Fixpoint tNfaDenote (s: tNfa): finType :=
   (match s with
   | NZero => void
   | NOne => unit
-  | NPlus a b => (tNfaDenote a) + (tNfaDenote b)
-  end)%type.
- (* 𝟘 𝟙 𝟎 *)
+  | NPlus a b => nfa⟦a⟧ + nfa⟦b⟧
+  end)%type
+where "'nfa⟦' s '⟧'" := (tNfaDenote s).
 
 Fixpoint tDfaDenote (s: tDfa): Type :=
   match s with
 	| DOne => unit
-	| DPlus a b => (tDfaDenote a) + (tDfaDenote b)
-	| DMult a b => (tDfaDenote a) * (tDfaDenote b)
-	end.
+	| DPlus a b => dfa⟦a⟧ + dfa⟦b⟧
+	| DMult a b => dfa⟦a⟧ * dfa⟦b⟧
+	end
+where "'dfa⟦' s '⟧'" := (tDfaDenote s).
 
 Fixpoint pset (s: tNfa): tDfa :=
   match s with
@@ -36,6 +37,15 @@ Fixpoint pset (s: tNfa): tDfa :=
   | NOne => DPlus DOne DOne
   | NPlus a b => DMult (pset a) (pset b)
   end.
+
+(* Fixpoint eqbNfa {s: tNfa}: nfa⟦s⟧ -> nfa⟦s⟧ -> bool := fun a b => a == b. *)
+
+(* Fixpoint eqbNfa {s: tNfa}: nfa⟦s⟧ -> nfa⟦s⟧ -> bool. refine( *)
+(*   match s with *)
+(*   | NZero => fun _ _ => true *)
+(*   | NOne => fun a b => a == b *)
+(*   | NPlus s1 s2 => _ *)
+(*   end). *)
 
 Module StateNotations.
   Declare Scope state_scope.

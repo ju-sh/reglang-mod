@@ -4,18 +4,17 @@ Set Bullet Behavior "Strict Subproofs".
 From aruvi Require state.
 Import state.StateNotations.
 
-Record t {A: Type}: Type := mkNfa {
+Record t {A: Type}: Type := mkEnfa {
   state: state.tNfa;
   start: {set nfa⟦state⟧};
   final: {set nfa⟦state⟧};
-  tf: nfa⟦state⟧ -> A -> nfa⟦state⟧ -> bool
+  tf: nfa⟦state⟧ -> option A -> nfa⟦state⟧ -> bool
 }.
 Arguments t: clear implicits.
 
 Section FAs.
   Context {A: finType}.
 
-  (* Like 𝟘 *)
   Definition nul: t A. refine {|
     state := state.NZero;
     start := set0;
@@ -24,12 +23,15 @@ Section FAs.
   |}.
   Defined.
 
-  (* Like 𝟙 *)
   Definition eps: t A. refine {|
     state := state.NOne;
     start := [set tt];
     final := [set tt];
-    tf src ch dst := true
+    tf src ch dst :=
+      match ch with
+      | None => true
+      | Some c => false
+      end
   |}.
   Defined.
 
@@ -38,10 +40,14 @@ Section FAs.
     start := [set (inl tt)];
     final := [set (inr tt)];
     tf src ch dst :=
-       match src, dst with
-       | inl _, inr _ => f ch
-       | _, _ => false
-       end
+      match ch with
+      | None => src == dst
+      | Some c =>
+          match src, dst with
+          | inl _, inr _ => f c
+          | _, _ => false
+          end
+      end
   |}.
   Defined.
 
@@ -50,12 +56,12 @@ Section FAs.
     start := inl @: start n1;
     final := inr @: final n2;
     tf src ch dst :=
-      match src, dst with
-      | inl s, inl d => (tf n1) s ch d 
-      | inr s, inr d => (tf n2) s ch d 
-      | inl s, inr d =>
+      match src, ch, dst with
+      | inl s, Some _, inl d => (tf n1) s ch d 
+      | inr s, Some _, inr d => (tf n2) s ch d 
+      | inl s, None, inr d =>
           (s \in (final n1)) && (d \in (start n2))
-      | _, _ => false
+      | _, _, _ => false
       end
   |}.
   Defined.
@@ -65,10 +71,14 @@ Section FAs.
     start := (inl @: start n1) :|: (inr @: start n2);
     final := (inl @: (start n1)) :|: (inr @: (start n2));
     tf src ch dst := 
-      match src, dst with
-      | inl s, inl d => (tf n1) s ch d
-      | inr s, inr d => (tf n2) s ch d
-      | _, _ => false
+      match ch with
+      | None => src == dst
+      | Some c =>
+          match src, dst with
+          | inl s, inl d => (tf n1) s ch d
+          | inr s, inr d => (tf n2) s ch d
+          | _, _ => false
+          end
       end
   |}.
   Defined.
@@ -78,28 +88,17 @@ Section FAs.
     start := [set (inl tt)];
     final := [set (inl tt)];
     tf src ch dst :=
-      match src, dst with
-      | inl _, inl _ => false
-      | inl _, inr d => d \in (start n)
-      | inr s, inl _ => s \in (final n)
-      (* if (src \in final n) && (dst \in start n) *)
-      (* match *) 
-
-      (* let tmp := (tf n) src ch in *)
-      (* if (final n) :&: tmp == set0 then tmp *)
-      (* else tmp :|: (start n) *)
+      match src, ch, dst with
+      | inl _, None, inl _ => true
+      (* | inl _, Some _, inl _ => false *)
+      | inl _, None, inr d => d \in (start n)
+      (* | inl _, Some _, inr d => d \in (start n) *)
+      | inr s, None, inl _ => s \in (final n)
+      (* | inr s, Some _, inl _ => s \in (final n) *)
+      | inr s, None, inr d => s == d
+      | inr s, Some _, inr d => (tf n) s ch d
+      | _, _, _ => false
+      end
   |}.
   Defined.
 End FAs.
-
-Section Sem.
-  Context {A: finType}.
-
-  Fixpoint accept (n: t A) (src: nfa⟦state n⟧)
-    (w: list A): bool :=
-    match w with
-    | [::] => src \in (final n)
-    | [:: ch & w'] =>
-        [exists (dst | (tf n) src ch), accept n dst w']
-    end.
-End Sem.
