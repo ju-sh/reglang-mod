@@ -1,6 +1,10 @@
 From mathcomp Require Import all_ssreflect.
 Set Bullet Behavior "Strict Subproofs".
 
+Reserved Notation "'dfa⟦' s '⟧'" (at level 20).
+Reserved Notation "'nfa⟦' s '⟧'" (at level 20).
+
+
 Inductive tNfa: Type :=
 | NZero: tNfa
 | NOne: tNfa
@@ -11,12 +15,13 @@ Inductive tDfa: Type :=
 | DPlus: tDfa -> tDfa -> tDfa
 | DMult: tDfa -> tDfa -> tDfa.
 
-Fixpoint tNfaDenote (s: tNfa): Type :=
-  match s with
-  | NZero => unit
-  | NOne => unit + unit
-  | NPlus a b => (tNfaDenote a) * (tNfaDenote b)
-  end.
+Fixpoint tNfaDenote (s: tNfa): finType :=
+  (match s with
+  | NZero => void
+  | NOne => unit
+  | NPlus a b => (tNfaDenote a) + (tNfaDenote b)
+  end)%type.
+ (* 𝟘 𝟙 𝟎 *)
 
 Fixpoint tDfaDenote (s: tDfa): Type :=
   match s with
@@ -32,25 +37,10 @@ Fixpoint pset (s: tNfa): tDfa :=
   | NPlus a b => DMult (pset a) (pset b)
   end.
 
+Module StateNotations.
+  Declare Scope state_scope.
+  Delimit Scope state_scope with state.
 
-(* Inductive t: Type := *)
-(* | Zero *)
-(* | One *)
-(* | Plus: t -> t -> t *)
-(* | Mult: t -> t -> t. *)
-
-(* Fixpoint pset (e: t): t. refine ( *)
-(*   match e with *)
-(*   | Zero => One *)
-(*   | One => Plus One One *)
-(*   | Plus a b => Mult (pset a) (pset b) *)
-(*   | Mult a b => _ *)
-(*   end). *)
-(*   refine ( *)
-(*     match a with *)
-(*     | Zero => pset b *)
-(*     | One => Mult (Plus One One) (pset b) *)
-(*     | Plus x y => Mult (pset (Mult x b)) (pset (Mult y b)) *)
-(*     | Mult x y => _ *)
-(*     end). *)
-(* Abort. *)
+  Notation "'dfa⟦' s '⟧'" := (tDfaDenote s) (at level 20).
+  Notation "'nfa⟦' s '⟧'" := (tNfaDenote s) (at level 20).
+End StateNotations.
