@@ -93,11 +93,8 @@ Section FAs.
     tf ch src dst :=
       match src, ch, dst with
       | inl _, None, inl _ => true
-      (* | inl _, Some _, inl _ => false *)
       | inl _, None, inr d => d \in (start n)
-      (* | inl _, Some _, inr d => d \in (start n) *)
       | inr s, None, inl _ => s \in (final n)
-      (* | inr s, Some _, inl _ => s \in (final n) *)
       | inr s, None, inr d => s == d
       | inr s, Some _, inr d => (tf n) ch s d
       | _, _, _ => false

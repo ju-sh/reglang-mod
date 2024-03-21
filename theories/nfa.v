@@ -3,6 +3,7 @@ Set Bullet Behavior "Strict Subproofs".
 
 From aruvi Require state.
 From aruvi Require enfa.
+From aruvi Require re.
 Import state.StateNotations.
 
 Record t {A: Type}: Type := mkNfa {
@@ -83,6 +84,7 @@ Section FAs.
   |}.
   Defined.
 
+
   (* Definition star (n: t A): t A. refine {| *)
   (*   state := state.NPlus state.NOne (state n); *)
   (*   start := [set (inl tt)]; *)
@@ -114,3 +116,5 @@ End FAs.
 (*         [exists (dst | (tf n) src ch), accept n dst w'] *)
 (*     end. *)
 (* End Sem. *)
+
+Lemma eps_correct: 
