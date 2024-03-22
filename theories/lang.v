@@ -8,23 +8,23 @@ Section Lang.
   Context {A: Type}.
 
   Definition eps: t A :=  nilp (T:=A).
-		(* match w with *)
-		(* | [::] => true *)
+    (* match w with *)
+    (* | [::] => true *)
     (* | _ => false *)
-		(* end. *)
+    (* end. *)
 
-	Definition char (f: A -> bool): t A := fun w =>
-		match w with
+  Definition char (f: A -> bool): t A := fun w =>
+    match w with
     | [:: x ] => f x
     | _ => false
-		end.
+    end.
 
-	Definition cat (l1 l2: t A): t A :=
-		fun v => [exists i : 'I_(size v).+1,
-			l1 (seq.take i v) && l2 (seq.drop i v)].
+  Definition cat (l1 l2: t A): t A :=
+    fun v => [exists i : 'I_(size v).+1,
+      l1 (seq.take i v) && l2 (seq.drop i v)].
 
-	Definition alt  (l1 l2: t A): t A :=
-		[pred w | (w \in l1) || (w \in l2)].
+  Definition alt  (l1 l2: t A): t A :=
+    [pred w | (w \in l1) || (w \in l2)].
 
   Definition residual (l: t A) (x: A): t A := fun w =>
     l (x :: w).

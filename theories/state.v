@@ -25,10 +25,10 @@ where "'nfa⟦' s '⟧'" := (tNfaDenote s).
 
 Fixpoint tDfaDenote (s: tDfa): Type :=
   match s with
-	| DOne => unit
-	| DPlus a b => dfa⟦a⟧ + dfa⟦b⟧
-	| DMult a b => dfa⟦a⟧ * dfa⟦b⟧
-	end
+  | DOne => unit
+  | DPlus a b => dfa⟦a⟧ + dfa⟦b⟧
+  | DMult a b => dfa⟦a⟧ * dfa⟦b⟧
+  end
 where "'dfa⟦' s '⟧'" := (tDfaDenote s).
 
 Fixpoint pset (s: tNfa): tDfa :=

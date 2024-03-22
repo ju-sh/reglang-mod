@@ -63,20 +63,20 @@ Section FAs.
   |}.
   Defined.
 
-  Definition cat (n1 n2: t A): t A. refine {|
-    state := state.NPlus (state n1) (state n2);
-    start := inl @: start n1;
-    final := inr @: final n2;
-    tf src ch dst :=
-      match src, dst with
-      | inl s, inl d => (tf n1) s ch d 
-      | inr s, inr d => (tf n2) s ch d 
-      | inl s, inr d =>
-          (s \in (final n1)) && (d \in (start n2))
-      | _, _ => false
-      end
-  |}.
-  Defined.
+  (* Definition cat (n1 n2: t A): t A. refine {| *)
+  (*   state := state.NPlus (state n1) (state n2); *)
+  (*   start := inl @: start n1; *)
+  (*   final := inr @: final n2; *)
+  (*   tf src ch dst := *)
+  (*     match src, dst with *)
+  (*     | inl s, inl d => (tf n1) s ch d *) 
+  (*     | inr s, inr d => (tf n2) s ch d *) 
+  (*     | inl s, inr d => *)
+  (*         (s \in (final n1)) && (d \in (start n2))  (1* TODO *1) *)
+  (*     | _, _ => false *)
+  (*     end *)
+  (* |}. *)
+  (* Defined. *)
 
   Definition alt (n1 n2: t A): t A. refine {|
     state := state.NPlus (state n1) (state n2);
@@ -154,15 +154,15 @@ Proof.
     + move => [src].
       case: src.
       * case; rewrite inE.
-        move => _.
-        rewrite /=.
-        move/exists_inP.
+        move => _ /= /exists_inP.
         move => [src1].
         case src1; first by case.
         case.
-        case (f a).
-        -- move => _.
-           rewrite /=.
+        case (f a); last by [].
+        move => _.
+        rewrite /accept.
+        rewrite /=.
+        shelve.
 
       * by case; rewrite inE.
 Restart.
