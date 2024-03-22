@@ -160,10 +160,30 @@ Proof.
         case.
         case (f a); last by [].
         move => _.
-        rewrite /accept.
-        rewrite /=.
-        shelve.
-
+        elim: w' => //=.
+        move => a2 w' IH.
+        move/exists_inP.
+        by move => [src2].
+      * by case; rewrite inE.
+Restart.
+  move => w //=.
+  apply/exists_inP/idP => //=.
+  - case w => [|a w'].
+    + move => [src] //=.
+      by case: src; case; rewrite !inE.
+    + move => [src].
+      case: src.
+      * case; rewrite inE.
+        move => _ /= /exists_inP.
+        move => [src1].
+        case src1; first by case.
+        case.
+        case (f a); last by [].
+        move => _.
+        elim: w' => //=.
+        move => a2 w' IH.
+        move/exists_inP.
+        by move => [src2].
       * by case; rewrite inE.
 Restart.
   move => w //=.
