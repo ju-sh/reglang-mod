@@ -29,6 +29,17 @@ Module Enfa.
   }.
   #[global] Arguments t: clear implicits.
 
+  Inductive accept {A: Type} {n: t A}: nfa⟦state n⟧ -> seq A -> Prop :=
+    | EnfaFin (s: nfa⟦state n⟧)
+        : s \in final n -> accept s [::]
+    | EnfaSome (s: nfa⟦state n⟧) (ch: A) (d: nfa⟦state n⟧) (w: seq A)
+        : (tf n) (Some ch) s d -> accept d w -> accept s (ch::w)
+    | EnfaNone (s d: nfa⟦state n⟧) (w: seq A)
+        : (tf n) None s d -> accept d w -> accept s w.
+
+  Definition to_lang {A: Type} (n: t A) (w: seq A) :=
+    exists2 src: nfa⟦state n⟧, src \in (start n) & accept src w.
+
   Definition eps_closure {A: Type} (n: t A)(src: nfa⟦state n⟧) :=
     [set dst | connect ((tf n) None) src dst].
 End Enfa.
@@ -184,3 +195,12 @@ Proof.
     exists (inr tt); first by [].
     by rewrite inE.
 Qed.
+
+
+Lemma of_enfaP {A: Type} (w: seq A): reflect (enfa_lang x) (x \in nfa_lang nfa_of).
+
+Lemma cat_correct {A: Type} (n1 n2: t A):
+  to_lang (cat n1 n2) =i lang.cat (to_lang n1) (to_lang n2).
+  (* lang.cat (re.to_lang r1) (re.to_lang r2) =i re.to_lang (re.Cat r1 r2). *)
+Proof.
+  move => w.
