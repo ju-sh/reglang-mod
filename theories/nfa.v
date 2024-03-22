@@ -14,6 +14,13 @@ Record t {A: Type}: Type := mkNfa {
 }.
 Arguments t: clear implicits.
 
+(* Section Coerce. *)
+(*   Context {A: Type}. *)
+(*   Parameter (n: t A). *)
+(*   Definition nfa_to_state (n: t A): finType := nfa⟦state n⟧. *)
+(*   Coercion nfa_to_state: n >-> finType. *)
+(* End Coerce. *)
+
 Definition of_enfa {A: Type} (n: enfa.t A): t A := {|
   state := enfa.state n;
   start := \bigcup_(p in enfa.start n) (enfa.eps_closure n p);
@@ -24,7 +31,7 @@ Definition of_enfa {A: Type} (n: enfa.t A): t A := {|
 |}.
 
 Section FAs.
-  Context {A: finType}.
+  Context {A: Type}.
 
   (* Like 𝟘 *)
   Definition nul: t A. refine {|
@@ -40,7 +47,7 @@ Section FAs.
     state := state.NOne;
     start := [set tt];
     final := [set tt];
-    tf src ch dst := true
+    tf src ch dst := false
   |}.
   Defined.
 
@@ -106,7 +113,7 @@ Section FAs.
 End FAs.
 
 Section Sem.
-  Context {A: finType}.
+  Context {A: Type}.
 
   Fixpoint accept (n: t A) (src: nfa⟦state n⟧)
     (w: list A): bool :=
@@ -120,17 +127,107 @@ Section Sem.
     [pred w | [exists src, (src \in (start n)) && (accept n src w)]].
 End Sem.
 
+Section HelperLemmas.
+  Context {A:Type}.
+
+  Lemma eps_tt: forall w: seq A,
+    accept eps tt w -> w = [::].
+  Proof.
+    case => //=.
+    move => a w'.
+    move/exists_inP. 
+    by move => [[]].
+  Qed.
+
+  (* Goal forall {A:Type} (w: seq A), *)
+  (*   nilp w == pred1 w. *)
+End HelperLemmas.
+
+
 Lemma eps_correct {A: finType}: to_lang (A:=A) eps =i re.to_lang re.Eps.
 Proof.
+  rewrite /= => w.
+  apply/exists_inP/idP.  (* ??? *)
+  - move => [[_]] //=.
+    case: w => [|a w'] //=.
+    move/exists_inP.
+    by move => [[aa]].
+  - rewrite //=.
+    case: w => [|a w'] //=.
+    rewrite /lang.eps.
+    Search (_ \in _).
+    rewrite unfold_in => _.
+    by exists tt; rewrite inE.
+Qed.
+    
+  (* - elim: w => [|a w'] //=. *)
+  (*   move => IH H. *)
+  (*   apply IH. *)
+  (* - move => [[_]] //=. *)
+  (*   case w eqn:Hw => //=. *)
+  (*   move/exists_inP.  (1* ??? *1) *)
+Restart.
+  rewrite /= => w.
+  apply/exists_inP/idP.  (* ??? *)
+  - rewrite /=.
+    (* move => [[_]]. *)
+    move => [[a]]; move: a.
+    case: w => [|a w'] //= _.
+    (* case/exists_inP. *)
+    (* case w eqn:Hw => //=. *)
+    (*   Locate "|". *)
+    (*   case/exists_inP; case => _. *)
+    (*   rewrite inE => _. *)
+    (*   Locate "\in". *)
+    (*   Search in_mem reflect. *)
+    (*   Print has. *)
+    (*   Check hasP. *)
+    (*   rewrite /lang.eps. *)
+    (*   move: Hw. *)
+    (*   move/hasP. *)
+    (*   rewrite /lang.eps. *)
+
+
+    (* rename l into w'. *)
+    (* Locate "exists2". *)
+    (* Search reflect ex2. *)
+    (* move/exists_inP. *)
+    (* move => [[_]] //=. *)
+
+
+    (* rewrite inE // => _. *)
+    (* case w eqn:Hw => //=. *)
+    (* case/exists_inP. *)
+    (* case => _. *)
+
+
+
+    (* elim: w => //= => a w' IH H. *)
+    (* case: w => [|a w'] //=. *)
+    (* case/exists_inP. *)
+    (* case => _. *)
+Restart.
+  move => w.
+  apply/exists_inP/idP. 
+  (* + move => [[]]. case: w => [|a w] //= _. case/exists_inP. *)
+  (* + move => /=. rewrite inE=>/eqP->. exists tt; by rewrite /= inE. *) 
+Restart.
+  rewrite /=.
+  move => w.
+  apply/exists_inP/idP.  (* ??? *)
+  - move => [[]] //=.
+    rewrite inE // => _.
+    case: w => [|a w'] //=.
+    case/exists_inP.
+    case => _.
+Restart.
   move => w.
   apply/exists_inP/idP.  (* ??? *)
   - move => [[]].
     case: w => [|a w'] _ //= .
     case/exists_inP.
     case => _.
-    rewrite /lang.eps.
-    rewrite /eps /accept /=.
-    rewrite /accept /eps.
-    move => x.
-    case: x.
-    
+(*
+accept eps tt w' -> a :: w' \in lang.eps
+*)
+Abort.
