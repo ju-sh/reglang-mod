@@ -2,7 +2,6 @@ From mathcomp Require Import all_ssreflect.
 Set Bullet Behavior "Strict Subproofs".
 
 From aruvi Require state.
-From aruvi Require enfa.
 From aruvi Require re.
 Import state.StateNotations.
 
@@ -21,16 +20,6 @@ Arguments t: clear implicits.
 (*   Coercion nfa_to_state: n >-> finType. *)
 (* End Coerce. *)
 
-Definition of_enfa {A: Type} (n: enfa.t A): t A := {|
-  state := enfa.state n;
-  start := \bigcup_(p in enfa.start n) (enfa.eps_closure n p);
-  final := enfa.final n;
-  tf p a q := [exists p',
-    (enfa.tf n) (Some a) p p' &&
-    (q \in enfa.eps_closure n p')]
-|}.
-
-
 Module Enfa.
   Record t {A: Type}: Type := mkEnfa {
     state: state.tNfa;
@@ -43,6 +32,16 @@ Module Enfa.
   Definition eps_closure {A: Type} (n: t A)(src: nfa⟦state n⟧) :=
     [set dst | connect ((tf n) None) src dst].
 End Enfa.
+
+Definition of_enfa {A: Type} (n: Enfa.t A): t A := {|
+  state := Enfa.state n;
+  start := \bigcup_(p in Enfa.start n) (Enfa.eps_closure n p);
+  final := Enfa.final n;
+  tf p a q := [exists p',
+    (Enfa.tf n) (Some a) p p' &&
+    (q \in Enfa.eps_closure n p')]
+|}.
+
 
 Section EnfaFAs.
   Context {A: Type}.
@@ -112,20 +111,9 @@ Section FAs.
   |}.
   Defined.
 
-  (* Definition cat (n1 n2: t A): t A. refine {| *)
-  (*   state := state.NPlus (state n1) (state n2); *)
-  (*   start := inl @: start n1; *)
-  (*   final := inr @: final n2; *)
-  (*   tf src ch dst := *)
-  (*     match src, dst with *)
-  (*     | inl s, inl d => (tf n1) s ch d *) 
-  (*     | inr s, inr d => (tf n2) s ch d *) 
-  (*     | inl s, inr d => *)
-  (*         (s \in (final n1)) && (d \in (start n2))  (1* TODO *1) *)
-  (*     | _, _ => false *)
-  (*     end *)
-  (* |}. *)
-  (* Defined. *)
+
+  Definition cat (n1 n2: t A): t A := of_enfa (ecat n1 n2).
+  Definition star (n: t A): t A := of_enfa (estar n).
 
   Definition alt (n1 n2: t A): t A. refine {|
     state := state.NPlus (state n1) (state n2);
@@ -139,26 +127,6 @@ Section FAs.
       end
   |}.
   Defined.
-
-
-  (* Definition star (n: t A): t A. refine {| *)
-  (*   state := state.NPlus state.NOne (state n); *)
-  (*   start := [set (inl tt)]; *)
-  (*   final := [set (inl tt)]; *)
-  (*   tf src ch dst := *)
-  (*     match src, dst with *)
-  (*     | inl _, inl _ => false *)
-  (*     | inl _, inr d => d \in (start n) *)
-  (*     | inr s, inl _ => s \in (final n) *)
-  (*     | inr s, inr d => s \in (final n) *)
-  (*     (1* if (src \in final n) && (dst \in start n) *1) *)
-  (*     (1* match *1) *) 
-
-  (*     (1* let tmp := (tf n) src ch in *1) *)
-  (*     (1* if (final n) :&: tmp == set0 then tmp *1) *)
-  (*     (1* else tmp :|: (start n) *1) *)
-  (* |}. *)
-  (* Defined. *)
 End FAs.
 
 Section Sem.
