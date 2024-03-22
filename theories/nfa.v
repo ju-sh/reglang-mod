@@ -30,6 +30,55 @@ Definition of_enfa {A: Type} (n: enfa.t A): t A := {|
     (q \in enfa.eps_closure n p')]
 |}.
 
+
+Module Enfa.
+  Record t {A: Type}: Type := mkEnfa {
+    state: state.tNfa;
+    start: {set nfa⟦state⟧};
+    final: {set nfa⟦state⟧};
+    tf: option A -> nfa⟦state⟧ -> nfa⟦state⟧ -> bool
+  }.
+  #[global] Arguments t: clear implicits.
+
+  Definition eps_closure {A: Type}
+    (n: t A)(src: nfa⟦state n⟧) := [set dst | connect ((tf n) None) src dst].
+End Enfa.
+
+Section EnfaFAs.
+  Context {A: Type}.
+
+  Definition cat (n1 n2: t A): Enfa.t A. refine {|
+    Enfa.state := state.NPlus (state n1) (state n2);
+    Enfa.start := inl @: start n1;
+    Enfa.final := inr @: final n2;
+    Enfa.tf ch src dst :=
+      match src, ch, dst with
+      | inl s, Some c, inl d => (tf n1) s c d 
+      | inr s, Some c, inr d => (tf n2) s c d 
+      | inl s, None, inr d =>
+          (s \in (final n1)) && (d \in (start n2))
+      | _, _, _ => false
+      end
+  |}.
+  Defined.
+
+  Definition star (n: t A): Enfa.t A. refine {|
+    Enfa.state := state.NPlus state.NOne (state n);
+    Enfa.start := [set (inl tt)];
+    Enfa.final := [set (inl tt)];
+    Enfa.tf ch src dst :=
+      match src, ch, dst with
+      | inl _, None, inl _ => true
+      | inl _, None, inr d => d \in (start n)
+      | inr s, None, inl _ => s \in (final n)
+      | inr s, None, inr d => s == d
+      | inr s, Some c, inr d => (tf n) s c d
+      | _, _, _ => false
+      end
+  |}.
+  Defined.
+End EnfaFAs.
+
 Section FAs.
   Context {A: Type}.
 
@@ -134,12 +183,9 @@ Proof.
   apply/exists_inP/idP.  (* ??? *)
   - move => [[_]] //=.
     case: w => [|a w'] //=.
-    move/exists_inP.
-    by move => [[]].
-  - rewrite //=.
-    case: w => [|a w'] //=.
-    rewrite /lang.eps.
-    rewrite unfold_in => _.
+    by move/exists_inP => [[]].
+  - case: w => [|a w'] //=.
+    rewrite /lang.eps unfold_in => _.
     by exists tt; rewrite inE.
 Qed.
 
