@@ -143,91 +143,73 @@ Section HelperLemmas.
   (*   nilp w == pred1 w. *)
 End HelperLemmas.
 
-
-Lemma eps_correct {A: finType}: to_lang (A:=A) eps =i re.to_lang re.Eps.
+Lemma eps_correct {A: Type}:
+  to_lang (A:=A) eps =i re.to_lang re.Eps.
 Proof.
   rewrite /= => w.
   apply/exists_inP/idP.  (* ??? *)
   - move => [[_]] //=.
     case: w => [|a w'] //=.
     move/exists_inP.
-    by move => [[aa]].
+    by move => [[]].
   - rewrite //=.
     case: w => [|a w'] //=.
     rewrite /lang.eps.
-    Search (_ \in _).
     rewrite unfold_in => _.
     by exists tt; rewrite inE.
 Qed.
-    
-  (* - elim: w => [|a w'] //=. *)
-  (*   move => IH H. *)
-  (*   apply IH. *)
-  (* - move => [[_]] //=. *)
-  (*   case w eqn:Hw => //=. *)
-  (*   move/exists_inP.  (1* ??? *1) *)
-Restart.
-  rewrite /= => w.
+
+Lemma char_correct {A: Type} (f: A -> bool):
+  to_lang (char f) =1 re.to_lang (re.Char f).
+Proof.
+  move => w //=.
   apply/exists_inP/idP.  (* ??? *)
   - rewrite /=.
-    (* move => [[_]]. *)
-    move => [[a]]; move: a.
-    case: w => [|a w'] //= _.
-    (* case/exists_inP. *)
-    (* case w eqn:Hw => //=. *)
-    (*   Locate "|". *)
-    (*   case/exists_inP; case => _. *)
-    (*   rewrite inE => _. *)
-    (*   Locate "\in". *)
-    (*   Search in_mem reflect. *)
-    (*   Print has. *)
-    (*   Check hasP. *)
-    (*   rewrite /lang.eps. *)
-    (*   move: Hw. *)
-    (*   move/hasP. *)
-    (*   rewrite /lang.eps. *)
+    move => [src].
+    case w eqn:Hw.
+    + rewrite /=.
+      case src eqn:Hsrc.
+      * rename u into l; case l.
+        by rewrite !inE.
+      * rename u into r; case r.
+        by rewrite inE.
+    + case src eqn:Hsrc.
+      * rename l into w'.
+        rename u into l. case l.
+        rewrite inE => _.
+        case (f a).
+        -- rewrite /=.
+           move/exists_inP.
+        rewrite /=.
+        move/exists_inP.
+        move => [H].
+      * rename u into l; case l.
 
 
-    (* rename l into w'. *)
-    (* Locate "exists2". *)
-    (* Search reflect ex2. *)
-    (* move/exists_inP. *)
-    (* move => [[_]] //=. *)
+    case src.
+    + move => l.
+      rewrite inE. case: l => _.
+      case w eqn:Hw => //=; first by rewrite /= inE.
+      rename l into w'.
+      move/exists_inP.
+      move => [s].
+      case s.
+      * 
+      case (f a) eqn:Hfa.
+      * rewrite /=.
+        move/exists_inP.
+        move => [src2].
+        case src2.
+        -- move => l _ /=.
 
+    case w eqn:Hw => //=.
+    + case src; first by move => ?; rewrite inE.
+      case.
+      rewrite inE //=.
 
-    (* rewrite inE // => _. *)
-    (* case w eqn:Hw => //=. *)
-    (* case/exists_inP. *)
-    (* case => _. *)
-
-
-
-    (* elim: w => //= => a w' IH H. *)
-    (* case: w => [|a w'] //=. *)
-    (* case/exists_inP. *)
-    (* case => _. *)
-Restart.
-  move => w.
-  apply/exists_inP/idP. 
-  (* + move => [[]]. case: w => [|a w] //= _. case/exists_inP. *)
-  (* + move => /=. rewrite inE=>/eqP->. exists tt; by rewrite /= inE. *) 
-Restart.
-  rewrite /=.
-  move => w.
-  apply/exists_inP/idP.  (* ??? *)
-  - move => [[]] //=.
-    rewrite inE // => _.
-    case: w => [|a w'] //=.
-    case/exists_inP.
-    case => _.
-Restart.
-  move => w.
-  apply/exists_inP/idP.  (* ??? *)
-  - move => [[]].
-    case: w => [|a w'] _ //= .
-    case/exists_inP.
-    case => _.
-(*
-accept eps tt w' -> a :: w' \in lang.eps
-*)
-Abort.
+    move => a w'.
+    move/exists_inP.
+    case (f a).
+    + case src.
+      * move => H.
+        move => [aa].
