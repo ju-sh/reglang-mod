@@ -105,16 +105,32 @@ Section FAs.
   (* Defined. *)
 End FAs.
 
-(* Section Sem. *)
-(*   Context {A: finType}. *)
+Section Sem.
+  Context {A: finType}.
 
-(*   Fixpoint accept (n: t A) (src: nfa⟦state n⟧) *)
-(*     (w: list A): bool := *)
-(*     match w with *)
-(*     | [::] => src \in (final n) *)
-(*     | [:: ch & w'] => *)
-(*         [exists (dst | (tf n) src ch), accept n dst w'] *)
-(*     end. *)
-(* End Sem. *)
+  Fixpoint accept (n: t A) (src: nfa⟦state n⟧)
+    (w: list A): bool :=
+    match w with
+    | [::] => src \in (final n)
+    | [:: ch & w'] =>
+        [exists (dst | (tf n) src ch dst), accept n dst w']
+    end.
 
-Lemma eps_correct: 
+  Definition to_lang (n: t A): lang.t A :=
+    [pred w | [exists src, (src \in (start n)) && (accept n src w)]].
+End Sem.
+
+Lemma eps_correct {A: finType}: to_lang (A:=A) eps =i re.to_lang re.Eps.
+Proof.
+  move => w.
+  apply/exists_inP/idP.  (* ??? *)
+  - move => [[]].
+    case: w => [|a w'] _ //= .
+    case/exists_inP.
+    case => _.
+    rewrite /lang.eps.
+    rewrite /eps /accept /=.
+    rewrite /accept /eps.
+    move => x.
+    case: x.
+    
