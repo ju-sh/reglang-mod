@@ -127,22 +127,6 @@ Section Sem.
     [pred w | [exists src, (src \in (start n)) && (accept n src w)]].
 End Sem.
 
-Section HelperLemmas.
-  Context {A:Type}.
-
-  Lemma eps_tt: forall w: seq A,
-    accept eps tt w -> w = [::].
-  Proof.
-    case => //=.
-    move => a w'.
-    move/exists_inP. 
-    by move => [[]].
-  Qed.
-
-  (* Goal forall {A:Type} (w: seq A), *)
-  (*   nilp w == pred1 w. *)
-End HelperLemmas.
-
 Lemma eps_correct {A: Type}:
   to_lang (A:=A) eps =i re.to_lang re.Eps.
 Proof.
@@ -163,9 +147,52 @@ Lemma char_correct {A: Type} (f: A -> bool):
   to_lang (char f) =1 re.to_lang (re.Char f).
 Proof.
   move => w //=.
-  apply/exists_inP/idP.  (* ??? *)
+  apply/exists_inP/idP => //=.
+  - case w => [|a w'].
+    + move => [src] //=.
+      by case: src; case; rewrite !inE.
+    + move => [src].
+      case: src.
+      * case; rewrite inE.
+        move => _.
+        rewrite /=.
+        move/exists_inP.
+        move => [src1].
+        case src1; first by case.
+        case.
+        case (f a).
+        -- move => _.
+           rewrite /=.
+
+      * by case; rewrite inE.
+Restart.
+  move => w //=.
+  apply/exists_inP/idP => //=.
+  - case w => [|a w'].
+    + rewrite /=.
+      move => [src].
+      case: src; case; rewrite inE.
+      * by rewrite inE.
+      * by [].
+    + move => [src].
+      case: src; case; rewrite inE.
+      * move => _.
+Restart.
+  move => w //=.
+  apply/exists_inP/idP.
   - rewrite /=.
     move => [src].
+    case w => [|a [|b w']]; first by case src eqn:Hsrc => //=; rewrite !inE.
+    + case src eqn:Hsrc.
+      * case u.
+        rewrite inE => _.
+        case (f a) eqn:Hfa.
+        -- rewrite /=.
+        rewrite /=.
+        move/exists_inP.
+        move => [src2].
+
+
     case w eqn:Hw.
     + rewrite /=.
       case src eqn:Hsrc.
@@ -177,9 +204,13 @@ Proof.
       * rename l into w'.
         rename u into l. case l.
         rewrite inE => _.
-        case (f a).
+        rewrite /lang.char.
+
+
+        case (f a) eqn:Hfa.
         -- rewrite /=.
            move/exists_inP.
+           move => [src2].
         rewrite /=.
         move/exists_inP.
         move => [H].
