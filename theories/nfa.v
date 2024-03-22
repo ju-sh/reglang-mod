@@ -40,14 +40,14 @@ Module Enfa.
   }.
   #[global] Arguments t: clear implicits.
 
-  Definition eps_closure {A: Type}
-    (n: t A)(src: nfa⟦state n⟧) := [set dst | connect ((tf n) None) src dst].
+  Definition eps_closure {A: Type} (n: t A)(src: nfa⟦state n⟧) :=
+    [set dst | connect ((tf n) None) src dst].
 End Enfa.
 
 Section EnfaFAs.
   Context {A: Type}.
 
-  Definition cat (n1 n2: t A): Enfa.t A. refine {|
+  Definition ecat (n1 n2: t A): Enfa.t A. refine {|
     Enfa.state := state.NPlus (state n1) (state n2);
     Enfa.start := inl @: start n1;
     Enfa.final := inr @: final n2;
@@ -62,7 +62,7 @@ Section EnfaFAs.
   |}.
   Defined.
 
-  Definition star (n: t A): Enfa.t A. refine {|
+  Definition estar (n: t A): Enfa.t A. refine {|
     Enfa.state := state.NPlus state.NOne (state n);
     Enfa.start := [set (inl tt)];
     Enfa.final := [set (inl tt)];
