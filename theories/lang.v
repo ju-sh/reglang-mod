@@ -8,10 +8,6 @@ Section Lang.
   Context {A: Type}.
 
   Definition eps: t A :=  nilp (T:=A).
-    (* match w with *)
-    (* | [::] => true *)
-    (* | _ => false *)
-    (* end. *)
 
   Definition char (f: A -> bool): t A := fun w =>
     match w with

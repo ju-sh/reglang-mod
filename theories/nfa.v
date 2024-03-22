@@ -152,19 +152,36 @@ Proof.
     + move => [src] //=.
       by case: src; case; rewrite !inE.
     + move => [src].
-      case: src.
-      * case; rewrite inE.
-        move => _ /= /exists_inP.
-        move => [src1].
-        case src1; first by case.
-        case.
-        case (f a); last by [].
-        move => _.
-        elim: w' => //=.
-        move => a2 w' IH.
+      case: src; last by case; rewrite inE.
+      case.
+      rewrite inE => _ /= /exists_inP => [[src1]].
+      case src1; first by case.
+      case.
+      case (f a) => [_|]; last by [].
+      elim: w' => [|a2 w' IH] //=.
+      move/exists_inP.
+      by move => [src2].
+  - rewrite /lang.char /=.
+    case w => [|a [|b w']]; first by []; last by [].
+    case (f a) eqn:Hfa => [_|]; last by [].
+    exists (inl tt); first by rewrite inE.
+    apply/exists_inP => //=. 
+    rewrite Hfa.
+    exists (inr tt); first by [].
+    by rewrite inE.
+Qed.
+
+
+
+
+  - case w => [|a [|b w']]; first by [].
+    + rewrite /=.
+      case (f a).
+      * move => _.
+        Search ex2 reflect.
         move/exists_inP.
-        by move => [src2].
-      * by case; rewrite inE.
+        move => [src].
+
 Restart.
   move => w //=.
   apply/exists_inP/idP => //=.
