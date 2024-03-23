@@ -42,6 +42,18 @@ Module Enfa.
 
   Definition eps_closure {A: Type} (n: t A)(src: nfa⟦state n⟧) :=
     [set dst | connect ((tf n) None) src dst].
+
+  Lemma lift_accept {A: Type} (n: t A) (src dst: nfa⟦state n⟧) (w: seq A)
+    : dst \in eps_closure n src -> accept dst w -> accept src w.
+  Proof.
+    rewrite inE => /connectP [s].
+    elim: s src w dst =>
+      [ src w dst _ -> //
+      | dst dsts IHw src w dst' /=].
+    case/andP => /= Htf Hpath Heq HAccdst'.
+    have H := IHw dst w dst' Hpath Heq HAccdst'.
+    exact: (Enfa.EnfaNone src dst w Htf H).
+  Qed.
 End Enfa.
 
 Definition of_enfa {A: Type} (n: Enfa.t A): t A := {|
@@ -197,7 +209,38 @@ Proof.
 Qed.
 
 
-Lemma of_enfaP {A: Type} (w: seq A): reflect (enfa_lang x) (x \in nfa_lang nfa_of).
+Lemma enfaE {A: Type} {n: Enfa.t A} (w: seq A) (src: nfa⟦Enfa.state n⟧):
+  (Enfa.accept src w) <->
+  (exists2 dst : nfa⟦state (of_enfa n)⟧,
+    dst \in Enfa.eps_closure n src & Enfa.accept dst w).
+Proof.
+  split => /=.
+  - elim => {src w}
+      [ fin H
+      | src ch dst w H H1 [dst' Heps Hacc]
+      | dst dst' w H H1 [s Heps Hacc]].
+    + exists fin; by [rewrite inE | constructor].
+    + exists src; first by rewrite inE.
+      exact: (Enfa.EnfaSome src ch dst w H H1).
+    + exists s; last by [].
+      rewrite inE in Heps.
+      rewrite inE.
+      exact: (connect_trans (connect1 _) Heps).
+  - elim: w src => [|ch w IH] s [s'] H H1.
+    + exact: Enfa.lift_accept n s s' [::] H H1.
+    + exact: Enfa.lift_accept n s s' (ch::w) H H1.
+Qed.
+
+
+Lemma of_enfaP {A: Type} (n: Enfa.t A) (w: seq A)
+  : reflect (Enfa.to_lang n w) (w \in to_lang (of_enfa n)).
+Proof.
+  apply: (iffP exists_inP) => [[src Hsrc Hfin]|].
+Undo.
+  apply: (iffP exists_inP).
+  - move => [src Hsrc Hfin].
+    shelve.
+  - move => H [src].
 
 Lemma cat_correct {A: Type} (n1 n2: t A):
   to_lang (cat n1 n2) =i lang.cat (to_lang n1) (to_lang n2).
