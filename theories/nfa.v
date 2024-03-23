@@ -212,35 +212,55 @@ Qed.
 Lemma enfaE {A: Type} {n: Enfa.t A} (w: seq A) (src: nfa⟦Enfa.state n⟧):
   (Enfa.accept src w) <->
   (exists2 dst : nfa⟦state (of_enfa n)⟧,
-    dst \in Enfa.eps_closure n src & Enfa.accept dst w).
+    dst \in Enfa.eps_closure n src & accept (of_enfa n) dst w).
 Proof.
   split => /=.
   - elim => {src w}
       [ fin H
       | src ch dst w H H1 [dst' Heps Hacc]
       | dst dst' w H H1 [s Heps Hacc]].
-    + exists fin; by [rewrite inE | constructor].
-    + exists src; first by rewrite inE.
-      exact: (Enfa.EnfaSome src ch dst w H H1).
+    + exists fin => //.
+      by rewrite inE connect0.
+    + exists src => /=; first by rewrite inE.
+      apply/exists_inP.
+      exists dst' => //.
+      apply/exists_inP.
+      by exists dst.
     + exists s; last by [].
       rewrite inE in Heps.
       rewrite inE.
       exact: (connect_trans (connect1 _) Heps).
-  - elim: w src => [|ch w IH] s [s'] H H1.
-    + exact: Enfa.lift_accept n s s' [::] H H1.
-    + exact: Enfa.lift_accept n s s' (ch::w) H H1.
+  - elim: w src => //=.
+    + move => src [s] Heps Hfin.
+      apply: (Enfa.lift_accept n _ s) => //.
+      by apply: (Enfa.EnfaFin s).
+    + move => ch w IH.
+      move => src [s] Heps.
+      case/exists_inP.
+      move => dst.
+      move/exists_inP => [d Hsd Hdd] H.
+      apply: (Enfa.lift_accept n src _ (ch::w) Heps).
+      apply: (Enfa.EnfaSome s ch _ w Hsd).
+      apply: IH.
+      by exists dst.
 Qed.
-
 
 Lemma of_enfaP {A: Type} (n: Enfa.t A) (w: seq A)
   : reflect (Enfa.to_lang n w) (w \in to_lang (of_enfa n)).
 Proof.
-  apply: (iffP exists_inP) => [[src Hsrc Hfin]|].
-Undo.
   apply: (iffP exists_inP).
-  - move => [src Hsrc Hfin].
-    shelve.
-  - move => H [src].
+  - move => [src Hin Hacc].
+    case/bigcupP: Hin => begin H1 H2.
+    rewrite /Enfa.to_lang.
+    exists begin => //.
+    apply/enfaE.
+    exists src => //.
+  - rewrite /Enfa.to_lang.
+    move => [esrc Hestart] /enfaE [src HesrcEps Hacc].
+    exists src => //.
+    apply/bigcupP.
+    by exists esrc.
+Qed.
 
 Lemma cat_correct {A: Type} (n1 n2: t A):
   to_lang (cat n1 n2) =i lang.cat (to_lang n1) (to_lang n2).
