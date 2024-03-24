@@ -170,8 +170,8 @@ End Sem.
 Section EnfaLemmas.
   Context {A: Type}.
 
-  Lemma enfa_catIr (n1: Enfa.t A) (n2: t A) (src: nfa⟦state n2⟧) (w: seq A)
-    : accept n2 src w -> Enfa.accept (n:=ecat (of_enfa n1) n2) (inr src) w.
+  Lemma enfa_catIr (n1 n2: t A) (src: nfa⟦state n2⟧) (w: seq A)
+    : accept n2 src w -> Enfa.accept (n:=ecat n1 n2) (inr src) w.
   Proof.
     elim: w src.
     - move => fin H. 
@@ -179,8 +179,18 @@ Section EnfaLemmas.
       by apply: (imset_f inr).
     - move => ch w IHw src2 /= /exists_inP [dst2] Htf H.
       have HH := IHw dst2 H.
-      exact: (Enfa.EnfaSome (n:=ecat (of_enfa n1) n2) (inr src2) ch (inr dst2) w Htf HH).
+      exact: (Enfa.EnfaSome (n:=ecat n1 n2) (inr src2) ch (inr dst2) w Htf HH).
   Qed.
+
+  Lemma enfa_catIl (n1: t A) (n2: Enfa.t A) (src: nfa⟦state n1⟧) (w1 w2: seq A)
+    : accept n1 src w1 -> Enfa.to_lang n2 w2 ->
+      Enfa.accept (n:=ecat n1 (of_enfa n2)) (inl src) (w1++w2).
+  Proof.
+    elim: w1 src => [fin1 /= H1 | ch w IHw src1 H1 Hl2] /=.
+    - rewrite /Enfa.to_lang.
+      move => [src2] Hsrc2 H2.
+      Check (imset_f inr).
+      by apply: (imset_f inl).
 
   Lemma enfa_catP {A: Type} (n1 n2: t A) (w: seq A): reflect
     (Enfa.to_lang (ecat n1 n2) w)
