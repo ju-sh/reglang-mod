@@ -167,14 +167,34 @@ Section Sem.
     [pred w | [exists src, (src \in (start n)) && (accept n src w)]].
 End Sem.
 
+Section EnfaLemmas.
+  Context {A: Type}.
 
-Lemma enfa_catP {A: Type} (n1 n2: t A) (w: seq A): reflect
-  (Enfa.to_lang (ecat n1 n2) w)
-  (lang.cat (to_lang n1) (to_lang n2) w).
-Proof.
-  apply: (iffP exists_inP).
-  - move => [i] nl1 nl2.
-  
+  Lemma enfa_catIr (n1: Enfa.t A) (n2: t A) (src: nfa⟦state n2⟧) (w: seq A)
+    : accept n2 src w -> Enfa.accept (n:=ecat (of_enfa n1) n2) (inr src) w.
+  Proof.
+    elim: w src.
+    - move => fin H. 
+      constructor => /=.
+      by apply: (imset_f inr).
+    - move => ch w IHw src2 /= /exists_inP [dst2] Htf H.
+      have HH := IHw dst2 H.
+      exact: (Enfa.EnfaSome (n:=ecat (of_enfa n1) n2) (inr src2) ch (inr dst2) w Htf HH).
+  Qed.
+
+  Lemma enfa_catP {A: Type} (n1 n2: t A) (w: seq A): reflect
+    (Enfa.to_lang (ecat n1 n2) w)
+    (lang.cat (to_lang n1) (to_lang n2) w).
+  Proof.
+    apply: (iffP (lang.catP (to_lang n1) (to_lang n2) w)).
+    - move => [w1] [w2] [H1 [H2 H3]].
+      rewrite /Enfa.to_lang.
+      case/exists_inP: H2 => src Hsrc Hacc.
+      exists (inl src) => /=.
+      apply: imset_f => //.
+      rewrite H1.
+End EnfaLemmas.
+ 
 
 
 Lemma eps_correct {A: Type}:

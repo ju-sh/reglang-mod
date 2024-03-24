@@ -45,7 +45,7 @@ Section Lang.
       exists (drop i w).
       rewrite cat_take_drop.
       by split.
-    - move => [w1 [w2 [Hw1w2 [H2 [H3]]]]].
+    - move => [w1 [w2 [Hw1w2 [H2 H3]]]].
       have Hi : size w1 < (size w).+1.
       + by rewrite Hw1w2 size_cat ltnS leq_addr.
       + exists (Ordinal Hi); subst.
