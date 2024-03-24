@@ -182,15 +182,19 @@ Section EnfaLemmas.
       exact: (Enfa.EnfaSome (n:=ecat n1 n2) (inr src2) ch (inr dst2) w Htf HH).
   Qed.
 
-  Lemma enfa_catIl (n1: t A) (n2: Enfa.t A) (src: nfa⟦state n1⟧) (w1 w2: seq A)
-    : accept n1 src w1 -> Enfa.to_lang n2 w2 ->
-      Enfa.accept (n:=ecat n1 (of_enfa n2)) (inl src) (w1++w2).
+  Lemma enfa_catIl (n1 n2: t A) (src: nfa⟦state n1⟧) (w1 w2: seq A)
+    : accept n1 src w1 -> w2 \in to_lang n2 ->
+      Enfa.accept (n:=ecat n1 n2) (inl src) (w1++w2).
   Proof.
-    elim: w1 src => [fin1 /= H1 | ch w IHw src1 H1 Hl2] /=.
-    - rewrite /Enfa.to_lang.
-      move => [src2] Hsrc2 H2.
-      Check (imset_f inr).
-      by apply: (imset_f inl).
+    elim: w1 src => /=.
+    - move => fin1 H1.
+      move/exists_inP => [src2] H2 H3.
+      apply: ((Enfa.EnfaNone (n:=ecat n1 n2) (inl fin1)) (inr src2) w2); first by rewrite /= H1.
+      exact: enfa_catIr n1 n2 src2 w2 H3.
+    - move => ch w IHw src /exists_inP [s] Htf H1 H.
+      apply: (Enfa.EnfaSome (n:=ecat n1 n2) (inl src) ch (inl s) (w++w2)) => //.
+      exact: IHw s H1 H.
+  Qed.
 
   Lemma enfa_catP {A: Type} (n1 n2: t A) (w: seq A): reflect
     (Enfa.to_lang (ecat n1 n2) w)
