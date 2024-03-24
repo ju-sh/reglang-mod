@@ -167,6 +167,16 @@ Section Sem.
     [pred w | [exists src, (src \in (start n)) && (accept n src w)]].
 End Sem.
 
+
+Lemma enfa_catP {A: Type} (n1 n2: t A) (w: seq A): reflect
+  (Enfa.to_lang (ecat n1 n2) w)
+  (lang.cat (to_lang n1) (to_lang n2) w).
+Proof.
+  apply: (iffP exists_inP).
+  - move => [i] nl1 nl2.
+  
+
+
 Lemma eps_correct {A: Type}:
   to_lang (A:=A) eps =i re.to_lang re.Eps.
 Proof.
@@ -267,3 +277,7 @@ Lemma cat_correct {A: Type} (n1 n2: t A):
   (* lang.cat (re.to_lang r1) (re.to_lang r2) =i re.to_lang (re.Cat r1 r2). *)
 Proof.
   move => w.
+  apply/of_enfaP/idP.
+  - rewrite /Enfa.to_lang.
+    move => [src Hstart HsrcAcc].
+    rewrite inE.
