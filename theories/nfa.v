@@ -158,19 +158,6 @@ Section FAs.
       end
   |}.
   Defined.
-
-  (* Definition alt (n1 n2: t A): t A. refine {| *)
-  (*   state := state.NPlus (state n1) (state n2); *)
-  (*   start := (inl @: start n1) :|: (inr @: start n2); *)
-  (*   final := (inl @: (start n1)) :|: (inr @: (start n2)); *)
-  (*   tf src ch dst := *) 
-  (*     match src, dst with *)
-  (*     | inl s, inl d => (tf n1) s ch d *)
-  (*     | inr s, inr d => (tf n2) s ch d *)
-  (*     | _, _ => false *)
-  (*     end *)
-  (* |}. *)
-  (* Defined. *)
 End FAs.
 
 Section Sem.
@@ -387,11 +374,54 @@ Proof.
   move => w.
   apply/idP/idP.
   - case/exists_inP => [[src|src]].
-    + rewrite inE.
-      rewrite !inE.
+    + rewrite !inE => Hsrc Hacc.
       apply/orP.
       left.
       apply/exists_inP.
       exists src => //.
-    + left.
-    move => 
+      elim: w src {Hsrc} Hacc => /=.
+      * move => src. 
+        by rewrite inE.
+      * move => ch w IH src.
+        case/exists_inP.
+        move => [|] // s Htf /= /IH H.
+        apply/exists_inP.
+        by exists s.
+    + rewrite !inE => Hsrc Hacc.
+      apply/orP.
+      right.
+      apply/exists_inP.
+      exists src => //.
+      elim: w src {Hsrc} Hacc => /=.
+      * move => src. 
+        by rewrite inE.
+      * move => ch w IH src.
+        case/exists_inP.
+        move => [|] // s Htf /= /IH H.
+        apply/exists_inP.
+        by exists s.
+  - rewrite !inE.
+    case/orP.
+    + move/exists_inP => [start1] Hstart1 Hacc.
+      apply/exists_inP.
+      exists (inl start1).
+      rewrite inE //.
+      elim: w start1 {Hstart1} Hacc => //=.
+      * move => start1 Hstart1.
+        by rewrite inE.
+      * move => ch w IH start1.
+        move/exists_inP => [d] Htf /IH Hacc.
+        apply/exists_inP.
+        by exists (inl d).
+    + move/exists_inP => [start2] Hstart2 Hacc.
+      apply/exists_inP.
+      exists (inr start2).
+      rewrite inE //.
+      elim: w start2 {Hstart2} Hacc => //=.
+      * move => start2 Hstart2.
+        by rewrite inE.
+      * move => ch w IH start2.
+        move/exists_inP => [d] Htf /IH Hacc.
+        apply/exists_inP.
+        by exists (inr d).
+Qed.
