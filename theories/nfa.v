@@ -350,7 +350,5 @@ Lemma cat_correct {A: Type} (n1 n2: t A):
   (* lang.cat (re.to_lang r1) (re.to_lang r2) =i re.to_lang (re.Cat r1 r2). *)
 Proof.
   move => w.
-  apply/of_enfaP/idP.
-  - rewrite /Enfa.to_lang.
-    move => [src Hstart HsrcAcc].
-    rewrite inE.
+  by apply/of_enfaP/idP; move => H; apply/enfa_catP.
+Qed.
