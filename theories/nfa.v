@@ -239,12 +239,70 @@ Section EnfaLemmas.
       rewrite H1.
       by apply: enfa_catIl.
     - rewrite /Enfa.to_lang.
-      move => [src].
-      move/imsetP => [src1] H1 H2.
-      move/enfa_catE.
+      move => [[src|src]]; last by case/imsetP. (* TODO: How the last ?? *)
+      move/imsetP => [src1] H1 H2 /enfa_catE [w1] [w2] [H3 H4 H5].
+      exists w1; exists w2.
+      split => //; split => //.
+      apply/exists_inP.
+      exists src1 => //.
+      assert (src = src1); first by case: H2.
+      by rewrite -H.
+  Qed.
+
+  Lemma enfaE {n: Enfa.t A} (w: seq A) (src: nfa⟦Enfa.state n⟧):
+    (Enfa.accept src w) <->
+    (exists2 dst : nfa⟦state (of_enfa n)⟧,
+      dst \in Enfa.eps_closure n src & accept (of_enfa n) dst w).
+  Proof.
+    split => /=.
+    - elim => {src w}
+        [ fin H
+        | src ch dst w H H1 [dst' Heps Hacc]
+        | dst dst' w H H1 [s Heps Hacc]].
+      + exists fin => //.
+        by rewrite inE connect0.
+      + exists src => /=; first by rewrite inE.
+        apply/exists_inP.
+        exists dst' => //.
+        apply/exists_inP.
+        by exists dst.
+      + exists s; last by [].
+        rewrite inE in Heps.
+        rewrite inE.
+        exact: (connect_trans (connect1 _) Heps).
+    - elim: w src => //=.
+      + move => src [s] Heps Hfin.
+        apply: (Enfa.lift_accept n _ s) => //.
+        by apply: (Enfa.EnfaFin s).
+      + move => ch w IH.
+        move => src [s] Heps.
+        case/exists_inP.
+        move => dst.
+        move/exists_inP => [d Hsd Hdd] H.
+        apply: (Enfa.lift_accept n src _ (ch::w) Heps).
+        apply: (Enfa.EnfaSome s ch _ w Hsd).
+        apply: IH.
+        by exists dst.
+  Qed.
+
+  Lemma of_enfaP (n: Enfa.t A) (w: seq A)
+    : reflect (Enfa.to_lang n w) (w \in to_lang (of_enfa n)).
+  Proof.
+    apply: (iffP exists_inP).
+    - move => [src Hin Hacc].
+      case/bigcupP: Hin => begin H1 H2.
+      rewrite /Enfa.to_lang.
+      exists begin => //.
+      apply/enfaE.
+      exists src => //.
+    - rewrite /Enfa.to_lang.
+      move => [esrc Hestart] /enfaE [src HesrcEps Hacc].
+      exists src => //.
+      apply/bigcupP.
+      by exists esrc.
+  Qed.
 End EnfaLemmas.
  
-
 
 Lemma eps_correct {A: Type}:
   to_lang (A:=A) eps =i re.to_lang re.Eps.
@@ -285,60 +343,6 @@ Proof.
     rewrite Hfa.
     exists (inr tt); first by [].
     by rewrite inE.
-Qed.
-
-
-Lemma enfaE {A: Type} {n: Enfa.t A} (w: seq A) (src: nfa⟦Enfa.state n⟧):
-  (Enfa.accept src w) <->
-  (exists2 dst : nfa⟦state (of_enfa n)⟧,
-    dst \in Enfa.eps_closure n src & accept (of_enfa n) dst w).
-Proof.
-  split => /=.
-  - elim => {src w}
-      [ fin H
-      | src ch dst w H H1 [dst' Heps Hacc]
-      | dst dst' w H H1 [s Heps Hacc]].
-    + exists fin => //.
-      by rewrite inE connect0.
-    + exists src => /=; first by rewrite inE.
-      apply/exists_inP.
-      exists dst' => //.
-      apply/exists_inP.
-      by exists dst.
-    + exists s; last by [].
-      rewrite inE in Heps.
-      rewrite inE.
-      exact: (connect_trans (connect1 _) Heps).
-  - elim: w src => //=.
-    + move => src [s] Heps Hfin.
-      apply: (Enfa.lift_accept n _ s) => //.
-      by apply: (Enfa.EnfaFin s).
-    + move => ch w IH.
-      move => src [s] Heps.
-      case/exists_inP.
-      move => dst.
-      move/exists_inP => [d Hsd Hdd] H.
-      apply: (Enfa.lift_accept n src _ (ch::w) Heps).
-      apply: (Enfa.EnfaSome s ch _ w Hsd).
-      apply: IH.
-      by exists dst.
-Qed.
-
-Lemma of_enfaP {A: Type} (n: Enfa.t A) (w: seq A)
-  : reflect (Enfa.to_lang n w) (w \in to_lang (of_enfa n)).
-Proof.
-  apply: (iffP exists_inP).
-  - move => [src Hin Hacc].
-    case/bigcupP: Hin => begin H1 H2.
-    rewrite /Enfa.to_lang.
-    exists begin => //.
-    apply/enfaE.
-    exists src => //.
-  - rewrite /Enfa.to_lang.
-    move => [esrc Hestart] /enfaE [src HesrcEps Hacc].
-    exists src => //.
-    apply/bigcupP.
-    by exists esrc.
 Qed.
 
 Lemma cat_correct {A: Type} (n1 n2: t A):
