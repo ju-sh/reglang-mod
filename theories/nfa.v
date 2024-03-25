@@ -140,8 +140,16 @@ Section FAs.
 
   Definition alt (n1 n2: t A): t A. refine {|
     state := state.NPlus (state n1) (state n2);
-    start := (inl @: start n1) :|: (inr @: start n2);
-    final := (inl @: (start n1)) :|: (inr @: (start n2));
+    start := [set s |
+      match s with
+      | inl s => s \in start n1
+      | inr s => s \in start n2
+      end];
+    final := [set s |
+      match s with
+      | inl s => s \in final n1
+      | inr s => s \in final n2
+      end];
     tf src ch dst := 
       match src, dst with
       | inl s, inl d => (tf n1) s ch d
@@ -150,6 +158,19 @@ Section FAs.
       end
   |}.
   Defined.
+
+  (* Definition alt (n1 n2: t A): t A. refine {| *)
+  (*   state := state.NPlus (state n1) (state n2); *)
+  (*   start := (inl @: start n1) :|: (inr @: start n2); *)
+  (*   final := (inl @: (start n1)) :|: (inr @: (start n2)); *)
+  (*   tf src ch dst := *) 
+  (*     match src, dst with *)
+  (*     | inl s, inl d => (tf n1) s ch d *)
+  (*     | inr s, inr d => (tf n2) s ch d *)
+  (*     | _, _ => false *)
+  (*     end *)
+  (* |}. *)
+  (* Defined. *)
 End FAs.
 
 Section Sem.
@@ -301,6 +322,14 @@ Section EnfaLemmas.
       apply/bigcupP.
       by exists esrc.
   Qed.
+
+  Lemma enfa_starP (n: t A) (w: seq A): reflect
+    (Enfa.to_lang (estar n) w)
+    (to_lang n w).
+  Proof.
+    apply: (iffP idP).
+    - 
+  Abort.
 End EnfaLemmas.
  
 
@@ -347,8 +376,22 @@ Qed.
 
 Lemma cat_correct {A: Type} (n1 n2: t A):
   to_lang (cat n1 n2) =i lang.cat (to_lang n1) (to_lang n2).
-  (* lang.cat (re.to_lang r1) (re.to_lang r2) =i re.to_lang (re.Cat r1 r2). *)
 Proof.
   move => w.
   by apply/of_enfaP/idP; move => H; apply/enfa_catP.
 Qed.
+
+Lemma alt_correct {A: Type} (n1 n2: t A):
+  to_lang (alt n1 n2) =i lang.alt (to_lang n1) (to_lang n2).
+Proof.
+  move => w.
+  apply/idP/idP.
+  - case/exists_inP => [[src|src]].
+    + rewrite inE.
+      rewrite !inE.
+      apply/orP.
+      left.
+      apply/exists_inP.
+      exists src => //.
+    + left.
+    move => 

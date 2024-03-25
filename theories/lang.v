@@ -52,5 +52,15 @@ Section Lang.
         * by rewrite take_size_cat.
         * by rewrite drop_size_cat.
   Qed.
+
+  (* Out of all words, there exists a list of words which is part of l and is
+     not ε.
+     Concatenation of all words in wl would also be in star l. Clever! *)
+  Lemma starP (l: t A) (w: seq A): reflect
+    (exists2 wl: seq (seq A),
+       all [predD l & eps] wl & w = flatten wl)
+    (w \in star l).
+  Proof.
+  Abort.    
 End Lang.
 
