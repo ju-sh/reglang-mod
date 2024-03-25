@@ -196,17 +196,52 @@ Section EnfaLemmas.
       exact: IHw s H1 H.
   Qed.
 
-  Lemma enfa_catP {A: Type} (n1 n2: t A) (w: seq A): reflect
+  Lemma enfa_catE (n1 n2: t A) (src: nfa⟦Enfa.state (ecat n1 n2)⟧) (w: seq A):
+    Enfa.accept src w ->
+    match src with
+    | inl s => exists w1 w2: seq A,
+        [/\ w = w1++w2, accept n1 s w1 & w2 \in to_lang n2]
+    | inr s => accept n2 s w
+    end.
+  Proof.
+    elim => {src w}.
+    - by move => src /imsetP [dst] Hdst ->.
+    - move => [src|src] ch [dst|dst] w //.
+      + move => /= Htf Hacc [w1] [w2] [H1 H2 H3].
+        exists (ch::w1).
+        exists w2.
+        subst.
+        split => //.
+        rewrite /accept.
+        apply/exists_inP.
+        by exists dst.
+      + move => /= Htf Hacc Heacc.
+        apply/exists_inP.
+        by exists dst.
+    - move => [src|src] [dst|dst] //=.
+      move => w /andP [H1 H2] Heacc Hacc.
+      exists [::] => /=.
+      exists w => //=.
+      split => //.
+      apply/exists_inP.
+      by exists dst.
+  Qed.
+
+  Lemma enfa_catP (n1 n2: t A) (w: seq A): reflect
     (Enfa.to_lang (ecat n1 n2) w)
     (lang.cat (to_lang n1) (to_lang n2) w).
   Proof.
     apply: (iffP (lang.catP (to_lang n1) (to_lang n2) w)).
     - move => [w1] [w2] [H1 [H2 H3]].
-      rewrite /Enfa.to_lang.
       case/exists_inP: H2 => src Hsrc Hacc.
       exists (inl src) => /=.
       apply: imset_f => //.
       rewrite H1.
+      by apply: enfa_catIl.
+    - rewrite /Enfa.to_lang.
+      move => [src].
+      move/imsetP => [src1] H1 H2.
+      move/enfa_catE.
 End EnfaLemmas.
  
 
