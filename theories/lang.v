@@ -102,14 +102,23 @@ Section Lang.
         case/andP => Hw' Hall [Hch Hw].
         exists w'; exists (flatten wl).
         subst.
-        split => //.
-        split => //.
+        do 2! split => //.
         apply/IHw.
         * rewrite -ltnS (leq_trans _ Hsz) //. (* TODO: How ?....? *)
           rewrite size_cat.
           rewrite 2!ltnS.
           apply: leq_addl.
         * by exists wl.
+  Qed.
+
+  Lemma star_cat (l: t A) (w1 w2: seq A):
+    w1 \in l ->
+    w2 \in (star l) ->
+    w1 ++ w2 \in star l.
+  Proof.
+    case: w1 => [|a w1] // H1 /starP [wl Ha Hf].
+    apply/starP.
+    by exists ((a::w1) :: wl); rewrite ?Hf //= H1.
   Qed.
 End Lang.
 

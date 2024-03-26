@@ -310,12 +310,45 @@ Section EnfaLemmas.
       by exists esrc.
   Qed.
 
+  Lemma enfa_star_cat (n: t A) (w1 w2: seq A) (src: nfa⟦Enfa.state (estar n)⟧):
+    Enfa.accept src w1 ->
+    Enfa.to_lang (estar n) w2 ->
+    Enfa.accept src (w1 ++ w2).
+  Proof.
+    elim => {src w1}.
+    - move => src.
+      rewrite inE => /eqP ->.
+      rewrite /Enfa.to_lang.
+      case => s.
+      by rewrite inE => /eqP ->.
+    - move => src ch dst w /=.
+      case src => src' //.
+      case dst => dst' //.
+      move => Htf Hacc IH H.
+      (* Check (Enfa.EnfaSome (n:=estar n) (inr src') ch (inr dst') (ch :: w ++ w2) _). *)
+      exact: Enfa.EnfaSome (IH H). (* TODO: How .... ? *)
+    - move => src dst w Htf Hacc IH H.
+      exact: Enfa.EnfaNone (IH H). (* TODO: How .... ? *)
+  Qed.
+
   Lemma enfa_starP (n: t A) (w: seq A): reflect
     (Enfa.to_lang (estar n) w)
-    (to_lang n w).
+    (lang.star (to_lang n) w).
   Proof.
     apply: (iffP idP).
-    - 
+    - case/lang.starP => wl H ->.
+      elim: wl H => /=.
+      + move => _.
+        rewrite /Enfa.to_lang.
+        exists (inl tt).
+        * by rewrite inE.
+        * apply: Enfa.EnfaFin => /=.
+          by rewrite inE.
+      + move => w' wl IH /andP [/andP [H1 H2] H3].
+        rewrite /Enfa.to_lang.
+        exists (inl tt).
+        * by rewrite inE.
+        * 
   Abort.
 End EnfaLemmas.
  
