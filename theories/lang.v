@@ -121,7 +121,7 @@ Section Lang.
     by exists ((a::w1) :: wl); rewrite ?Hf //= H1.
   Qed.
 
-  Lemma star_eq (n: t A) (l1 l2: t A):
+  Lemma star_eq (l1 l2: t A):
     l1 =i l2 -> star l1 =i star l2.
   Proof.
     move => H w.
@@ -140,4 +140,3 @@ Section Lang.
       by rewrite H.
   Qed.
 End Lang.
-
