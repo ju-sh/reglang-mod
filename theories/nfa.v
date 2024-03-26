@@ -425,3 +425,10 @@ Proof.
         apply/exists_inP.
         by exists (inr d).
 Qed.
+
+Lemma star_correct {A: Type} (n: t A):
+  to_lang (star n) =i lang.star (to_lang n).
+Proof.
+  move => w.
+  apply/of_enfaP/idP.
+  - 

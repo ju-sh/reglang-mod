@@ -53,6 +53,16 @@ Section Lang.
         * by rewrite drop_size_cat.
   Qed.
 
+  (* Lemma catI (l1 l2: t A) (w1 w2: seq A) *)
+  (*   : w1 \in l1 -> *)
+  (*     w2 \in l2 -> *)
+  (*     w1 ++ w2 \in cat l1 l2. *)
+  (* Proof. *)
+  (*   move => Hl1 Hl2. *)
+  (*   apply/catP. *)
+  (*   by exists w1; exists w2. *)
+  (* Qed. *)
+
   (* Out of all words, there exists a list of words which is part of l and is
      not ε.
      Concatenation of all words in wl would also be in star l. Clever! *)
@@ -61,6 +71,40 @@ Section Lang.
        all [predD l & eps] wl & w = flatten wl)
     (w \in star l).
   Proof.
+    (* TODO: ??? -2 and 1 should be same, right? And what's _.+1 *)
+    (* elim: {w} _.+1 {-2}w (ltnSn (size w)) => //. *)
+    elim: {w} _.+1 {-2}w (ltnSn (size w)); first by [].
+    move => n IHw.
+    case => /=.
+    - move => Hsz.
+      left.
+      by exists [::].
+    - move => ch w Hsz.
+      apply (iffP (catP _ _ w)).
+      + move => [w1] [w2] [Hw1w2] [H1].
+        case/IHw.
+        * rewrite -ltnS.
+          rewrite (leq_trans _ Hsz) //. (* TODO: How ?....? *)
+          by rewrite Hw1w2 size_cat !ltnS leq_addl.
+        * move => wl Hall H.
+          exists ((ch::w) :: wl).
+          -- apply/andP.
+             split => //.
+             (* rewrite Hw1w2. *)
+             subst.
+             rewrite simpl_predE.
+             apply/andP.
+             split => //.
+             (*
+             H1 => ch :: w1 \in l
+             Hall => flatten wl \in l
+             => concat of these also \in l
+             *)
+             
+          
+             
+(* ltnS : forall m n : nat, (m < n.+1) = (m <= n) *)
+
   Abort.    
 End Lang.
 
