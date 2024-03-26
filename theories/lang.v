@@ -120,5 +120,24 @@ Section Lang.
     apply/starP.
     by exists ((a::w1) :: wl); rewrite ?Hf //= H1.
   Qed.
+
+  Lemma star_eq (n: t A) (l1 l2: t A):
+    l1 =i l2 -> star l1 =i star l2.
+  Proof.
+    move => H w.
+    apply/starP/starP.
+    - move => [wl] Hall Hflatten.
+      exists wl => //.
+      erewrite eq_all.
+      eexact Hall.
+      move => x /=.
+      by rewrite H.
+    - move => [wl] Hall Hflatten.
+      exists wl => //.
+      erewrite eq_all.
+      eexact Hall.
+      move => x /=.
+      by rewrite H.
+  Qed.
 End Lang.
 
