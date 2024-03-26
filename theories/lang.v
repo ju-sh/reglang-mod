@@ -53,6 +53,16 @@ Section Lang.
         * by rewrite drop_size_cat.
   Qed.
 
+  Lemma cat_eq (l1 l2 l3 l4: t A):
+    l1 =i l2 ->
+    l3 =i l4 ->
+    cat l1 l3 =i cat l2 l4.
+  Proof.
+    move => H1 H2 w.
+    apply: eq_existsb => n. 
+    by rewrite (_ : l1 =1 l2) // (_ : l3 =1 l4).
+  Qed.
+
   (* Lemma catI (l1 l2: t A) (w1 w2: seq A) *)
   (*   : w1 \in l1 -> *)
   (*     w2 \in l2 -> *)
@@ -100,11 +110,17 @@ Section Lang.
              Hall => flatten wl \in l
              => concat of these also \in l
              *)
-             
-          
-             
-(* ltnS : forall m n : nat, (m < n.+1) = (m <= n) *)
-
-  Abort.    
+             rewrite unfold_in in H1.
+             rename w1 into w'.
+             Check all.
+             assert (flatten wl \in l).
+             ++ elim: wl Hall Hsz => //=.
+                rewrite cats0 ltnS => _.
+                shelve.
+                shelve.
+             ++ shelve.
+          -- shelve.
+      + shelve.
+  Abort.
 End Lang.
 

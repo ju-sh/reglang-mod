@@ -431,4 +431,34 @@ Lemma star_correct {A: Type} (n: t A):
 Proof.
   move => w.
   apply/of_enfaP/idP.
-  - 
+Admitted.
+
+Section OfRe.
+  Context {A: Type}.
+
+  Fixpoint of_re (r: re.t A): t A :=
+    match r with
+    | re.Eps => eps
+    | re.Char f => char f
+    | re.Cat r1 r2 => cat (of_re r1) (of_re r2)
+    | re.Alt r1 r2 => alt (of_re r1) (of_re r2)
+    | re.Star rr => star (of_re rr)
+    end.
+
+  Theorem of_re_correctness (r: re.t A):
+    to_lang (of_re r) =i re.to_lang r.
+  Proof.
+    elim: r.
+    - exact: eps_correct.
+    - apply: char_correct.
+    - move => r1 IHr1 r2 IHr2 w /=.
+      rewrite cat_correct.
+      exact: lang.cat_eq.
+    - move => r1 IHr1 r2 IHr2 w /=.
+      rewrite alt_correct.
+      rewrite /lang.alt.
+      rewrite inE IHr1 IHr2.
+      by rewrite inE.
+    - move => r IHr.
+  Abort.
+End OfRe.
