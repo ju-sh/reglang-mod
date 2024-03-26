@@ -386,31 +386,39 @@ Section EnfaLemmas.
   Lemma enfa_star_langI (n: t A) (w: seq A):
     w \in to_lang n -> Enfa.accept (n:=estar n) (inl tt) w.
   Proof.
-    case/exists_inP.
-    move => src Hin Hacc.
-    apply: (Enfa.lift_accept (estar n) (inl tt) (inr src) w).
-    - rewrite inE.
-      Check connect1.
-      Check @connect1 _ ((Enfa.tf (estar n)) None) (inl tt) (inr src).
-      by apply: (@connect1 _ ((Enfa.tf (estar n)) None) (inl tt) (inr src)).
-    - Search accept Enfa.accept.
-      Check enfa_catIr.
-      Check (Enfa.lift_accept (estar n)).
-      apply: (Enfa.lift_accept (estar n)).
+    case/exists_inP => src Hsrc Hacc.
+    refine (Enfa.EnfaNone (n:=estar n) (inl tt) (inr src) w _ _) => //.
+    by apply: enfa_starI.
+  Qed.
 
-      rewrite /Enfa.eps_closure.
-      Check connect_trans (connect1 _).
-      Search connect.
-      Check connect0.
-      rewrite inE.
-      rewrite /connect /=.
-      rewrite unfold_in /=.
-    apply: Enfa.lift_accept.
-    apply: ((Enfa.EnfaNone (n:=estar n)) (inl tt) (inr src) w) => //.
-
-    apply: (Enfa.EnfaNone (n:=estar n)).
-    Check Enfa.EnfaNone (n:=estar n) (inr src).
-    apply: (@EnfaNone enfa_star _ (Some s)) => //. exact: enfa_starI.
+  (* Warning!: This is in Prop, not bool *)
+  Lemma enfa_starE (n: t A) (src: nfa⟦Enfa.state (estar n)⟧) (w: seq A):
+    Enfa.accept src w ->
+    match src with
+    | inl _ => is_true (lang.star (to_lang n) w)
+    | inr src' => exists w1 w2: seq A,
+        [/\ w = w1 ++ w2, accept n src' w1 & lang.star (to_lang n) w2]
+    end.
+  Proof.
+    elim => {w src}.
+    - move => [src|src] //.
+      by rewrite inE => /eqP.
+    - move => [src|src] ch [dst|dst] w //= Htf Hacc [w1] [w2] [H1 H2 H3].
+      exists (ch::w1); exists w2.
+      rewrite H1 /=.
+      split => //.
+      apply/exists_inP.
+      by exists dst.
+    (* - move => [src|] [|dst] w //=. *)
+    - move => [src|src] [dst|dst] w //=.
+      + move => Hin Hacc.
+        move => [w1] [w2] [-> H].
+        apply: lang.star_cat.
+        apply/exists_inP.
+        by exists dst.
+      + move => Hin Hacc H.
+        exists [::] => /=.
+        by exists w => /=.
   Qed.
 
   Lemma enfa_starP (n: t A) (w: seq A): reflect
@@ -430,8 +438,13 @@ Section EnfaLemmas.
         rewrite /Enfa.to_lang.
         exists (inl tt).
         * by rewrite inE.
-        * apply: enfa_star_cat. 
-  Abort.
+        * apply: enfa_star_cat; first by apply: enfa_star_langI.
+          by apply: IH.
+    - rewrite /Enfa.to_lang.
+      case => src.
+      rewrite inE => /eqP ->.
+      exact: enfa_starE.
+  Qed.
 End EnfaLemmas.
  
 
