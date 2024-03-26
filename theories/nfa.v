@@ -90,10 +90,10 @@ Section EnfaFAs.
     Enfa.final := [set (inl tt)];
     Enfa.tf ch src dst :=
       match src, ch, dst with
-      | inl _, None, inl _ => true
+      (* | inl _, None, inl _ => true *)
       | inl _, None, inr d => d \in (start n)
       | inr s, None, inl _ => s \in (final n)
-      | inr s, None, inr d => s == d
+      (* | inr s, None, inr d => s == d *)
       | inr s, Some c, inr d => (tf n) s c d
       | _, _, _ => false
       end
@@ -331,12 +331,34 @@ Section EnfaLemmas.
       exact: Enfa.EnfaNone (IH H). (* TODO: How .... ? *)
   Qed.
 
+
+  Lemma enfa_start_unit (n: t A): inl tt \in Enfa.start (estar n).
+  Proof. by rewrite inE. Qed.
+
+  Lemma enfa_final_unit (n: t A): inl tt \in Enfa.final (estar n).
+  Proof. by rewrite inE. Qed.
+
+  Lemma enfa_starI (n: t A) (w: seq A) (src: nfa⟦state n⟧):
+    accept n src w ->
+    Enfa.accept (n:=estar n) (inr src) w.
+  Proof.
+    elim: w src => /=.
+    - move => src Hsrc.
+      apply: Enfa.EnfaFin.
+      Search (_ \in _).
+      move => /=.
+      rewrite inE.
+  Abort.
+
   Lemma enfa_star_langI (n: t A) (w: seq A):
     w \in to_lang n -> Enfa.accept (n:=estar n) (inl tt) w.
   Proof.
     case/exists_inP.
     move => src Hin Hacc.
-    Check Enfa.EnfaNone (n:=estar n).
+    apply: ((Enfa.EnfaNone (n:=estar n)) (inl tt) (inr src) w) => //.
+
+    apply: (Enfa.EnfaNone (n:=estar n)).
+    Check Enfa.EnfaNone (n:=estar n) (inr src).
     apply: (@EnfaNone enfa_star _ (Some s)) => //. exact: enfa_starI.
   Qed.
 
