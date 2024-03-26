@@ -587,9 +587,8 @@ Section OfRe.
       rewrite /lang.alt.
       rewrite inE IHr1 IHr2.
       by rewrite inE.
-    - move => r IHr w //.
+    - move => r IHr /= w.
       rewrite star_correct.
-      Check lang.star_eq.
-      Check lang.star_eq.
-  Abort.
+      by apply: lang.star_eq.
+  Qed.
 End OfRe.
