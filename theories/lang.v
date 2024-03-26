@@ -93,34 +93,23 @@ Section Lang.
       apply (iffP (catP _ _ w)).
       + move => [w1] [w2] [Hw1w2] [H1].
         case/IHw.
-        * rewrite -ltnS.
-          rewrite (leq_trans _ Hsz) //. (* TODO: How ?....? *)
+        * rewrite -ltnS (leq_trans _ Hsz) //. (* TODO: How ?....? *)
           by rewrite Hw1w2 size_cat !ltnS leq_addl.
         * move => wl Hall H.
-          exists ((ch::w) :: wl).
-          -- apply/andP.
-             split => //.
-             (* rewrite Hw1w2. *)
-             subst.
-             rewrite simpl_predE.
-             apply/andP.
-             split => //.
-             (*
-             H1 => ch :: w1 \in l
-             Hall => flatten wl \in l
-             => concat of these also \in l
-             *)
-             rewrite unfold_in in H1.
-             rename w1 into w'.
-             Check all.
-             assert (flatten wl \in l).
-             ++ elim: wl Hall Hsz => //=.
-                rewrite cats0 ltnS => _.
-                shelve.
-                shelve.
-             ++ shelve.
-          -- shelve.
-      + shelve.
-  Abort.
+          exists ((ch::w1) :: wl); first by apply/andP; split.
+          by rewrite Hw1w2 H.
+      + move => [[|[|ch' w'] wl] //=].
+        case/andP => Hw' Hall [Hch Hw].
+        exists w'; exists (flatten wl).
+        subst.
+        split => //.
+        split => //.
+        apply/IHw.
+        * rewrite -ltnS (leq_trans _ Hsz) //. (* TODO: How ?....? *)
+          rewrite size_cat.
+          rewrite 2!ltnS.
+          apply: leq_addl.
+        * by exists wl.
+  Qed.
 End Lang.
 
