@@ -13,13 +13,6 @@ Record t {A: Type}: Type := mkNfa {
 }.
 Arguments t: clear implicits.
 
-(* Section Coerce. *)
-(*   Context {A: Type}. *)
-(*   Parameter (n: t A). *)
-(*   Definition nfa_to_state (n: t A): finType := nfa⟦state n⟧. *)
-(*   Coercion nfa_to_state: n >-> finType. *)
-(* End Coerce. *)
-
 Module Enfa.
   Record t {A: Type}: Type := mkEnfa {
     state: state.tNfa;

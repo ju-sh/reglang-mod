@@ -9,7 +9,6 @@ Inductive t {A: Type}: Type :=
 | Cat: t -> t -> t
 | Alt: t -> t -> t
 | Star: t -> t.
-(* | Cmpl: t -> t. *) (* Complement *)
 Arguments t: clear implicits.
 
 Section Combinators.
@@ -42,7 +41,6 @@ Fixpoint to_lang {A: Type} (r: t A): lang.t A :=
   | Cat r1 r2 => lang.cat (to_lang r1) (to_lang r2)
   | Alt r1 r2 => lang.alt (to_lang r1) (to_lang r2)
   | Star rr => lang.star (to_lang rr)
-  (* | Cmpl rr => not (to_lang rr) *)
   end.
 
 Module ReNotations.
