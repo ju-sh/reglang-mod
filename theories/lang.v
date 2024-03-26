@@ -63,16 +63,6 @@ Section Lang.
     by rewrite (_ : l1 =1 l2) // (_ : l3 =1 l4).
   Qed.
 
-  (* Lemma catI (l1 l2: t A) (w1 w2: seq A) *)
-  (*   : w1 \in l1 -> *)
-  (*     w2 \in l2 -> *)
-  (*     w1 ++ w2 \in cat l1 l2. *)
-  (* Proof. *)
-  (*   move => Hl1 Hl2. *)
-  (*   apply/catP. *)
-  (*   by exists w1; exists w2. *)
-  (* Qed. *)
-
   (* Out of all words, there exists a list of words which is part of l and is
      not ε.
      Concatenation of all words in wl would also be in star l. Clever! *)

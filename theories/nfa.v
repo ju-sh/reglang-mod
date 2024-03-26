@@ -62,7 +62,7 @@ Definition of_enfa {A: Type} (n: Enfa.t A): t A := {|
 Section EnfaFAs.
   Context {A: Type}.
 
-  Definition ecat (n1 n2: t A): Enfa.t A. refine {|
+  Definition ecat (n1 n2: t A): Enfa.t A := {|
     Enfa.state := state.NPlus (state n1) (state n2);
     Enfa.start := inl @: start n1;
     Enfa.final := inr @: final n2;
@@ -75,9 +75,8 @@ Section EnfaFAs.
       | _, _, _ => false
       end
   |}.
-  Defined.
 
-  Definition estar (n: t A): Enfa.t A. refine {|
+  Definition estar (n: t A): Enfa.t A := {|
     Enfa.state := state.NPlus state.NOne (state n);
     Enfa.start := [set (inl tt)];
     Enfa.final := [set (inl tt)];
@@ -91,31 +90,28 @@ Section EnfaFAs.
       | _, _, _ => false
       end
   |}.
-  Defined.
 End EnfaFAs.
 
 Section FAs.
   Context {A: Type}.
 
   (* Like 𝟘 *)
-  Definition nul: t A. refine {|
+  Definition nul: t A := {|
     state := state.NZero;
     start := set0;
     final := set0;
     tf src ch dst := false
   |}.
-  Defined.
 
   (* Like 𝟙 *)
-  Definition eps: t A. refine {|
+  Definition eps: t A :={|
     state := state.NOne;
     start := [set tt];
     final := [set tt];
     tf src ch dst := false
   |}.
-  Defined.
 
-  Definition char (f: A -> bool): t A. refine {|
+  Definition char (f: A -> bool): t A := {|
     state := state.NPlus state.NOne state.NOne;
     start := [set (inl tt)];
     final := [set (inr tt)];
@@ -125,13 +121,8 @@ Section FAs.
        | _, _ => false
        end
   |}.
-  Defined.
 
-
-  Definition cat (n1 n2: t A): t A := of_enfa (ecat n1 n2).
-  Definition star (n: t A): t A := of_enfa (estar n).
-
-  Definition alt (n1 n2: t A): t A. refine {|
+  Definition alt (n1 n2: t A): t A := {|
     state := state.NPlus (state n1) (state n2);
     start := [set s |
       match s with
@@ -150,7 +141,9 @@ Section FAs.
       | _, _ => false
       end
   |}.
-  Defined.
+
+  Definition cat (n1 n2: t A): t A := of_enfa (ecat n1 n2).
+  Definition star (n: t A): t A := of_enfa (estar n).
 End FAs.
 
 Section Sem.
@@ -170,28 +163,6 @@ End Sem.
 
 Section EnfaLemmas.
   Context {A: Type}.
-
-  Lemma lift_accept_ne (n: t A) (src: nfa⟦state n⟧) (w: seq A):
-    src \in (start n) -> accept n src w -> Enfa.accept (n:=estar n) (inr src) w.
-  Proof.
-
-  Restart.
-    move => Hstart Hacc.
-    elim: w Hacc => //=.
-    - move => H.
-      (* apply: Enfa.EnfaFin => /=. *)
-    (* refine (Enfa.EnfaNone (n:=estar n) (inr src) (inl tt) w _ _). *)
-    (* - rewrite /=. *)
-    (* apply: Enfa.EnfaNone. *)
-  (* Restart. *)
-    (* elim: w src. *)
-    (* - rewrite /= => Hstart src H. *)
-      (* apply: Enfa.EnfaFin. *)
-      (* by rewrite inE. *)
-    (* - move => ch w IHw src Hstart H. *)
-      (* refine (Enfa.EnfaSome (n:=estar n) (inr src) ch (inl tt) w _ _). *)
-      (* + rewrite /=. *)
-  Abort.
 
   Lemma enfa_catIr (n1 n2: t A) (src: nfa⟦state n2⟧) (w: seq A)
     : accept n2 src w -> Enfa.accept (n:=ecat n1 n2) (inr src) w.
@@ -346,21 +317,11 @@ Section EnfaLemmas.
       exact: Enfa.EnfaNone (IH H). (* TODO: How .... ? *)
   Qed.
 
-
   Lemma enfa_start_unit (n: t A): inl tt \in Enfa.start (estar n).
   Proof. by rewrite inE. Qed.
 
   Lemma enfa_final_unit (n: t A): inl tt \in Enfa.final (estar n).
   Proof. by rewrite inE. Qed.
-  
-  (* Goal forall (n: Enfa.t A) (s d: nfa⟦Enfa.state n⟧) (w: seq A), *)
-  (*   Enfa.accept s w -> *)
-  (*  (Enfa.tf n) None s d -> *)
-  (*   Enfa.accept d [::]. *)
-  (* Proof. *)
-  (*   move => n s d w H Htf. *)
-  (*   apply: Enfa.EnfaFin. *)
-  (*   Check (tf n) *)
 
   Lemma enfa_starI (n: t A) (w: seq A) (src: nfa⟦state n⟧):
     accept n src w ->
@@ -440,119 +401,122 @@ Section EnfaLemmas.
   Qed.
 End EnfaLemmas.
  
+Section Correctness.
+  Context {A: Type}.
 
-Lemma eps_correct {A: Type}:
-  to_lang (A:=A) eps =i re.to_lang re.Eps.
-Proof.
-  rewrite /= => w.
-  apply/exists_inP/idP.  (* ??? *)
-  - move => [[_]] //=.
-    case: w => [|a w'] //=.
-    by move/exists_inP => [[]].
-  - case: w => [|a w'] //=.
-    rewrite /lang.eps unfold_in => _.
-    by exists tt; rewrite inE.
-Qed.
+  Lemma eps_correct:
+    to_lang (A:=A) eps =i re.to_lang re.Eps.
+  Proof.
+    rewrite /= => w.
+    apply/exists_inP/idP.  (* ??? *)
+    - move => [[_]] //=.
+      case: w => [|a w'] //=.
+      by move/exists_inP => [[]].
+    - case: w => [|a w'] //=.
+      rewrite /lang.eps unfold_in => _.
+      by exists tt; rewrite inE.
+  Qed.
 
-Lemma char_correct {A: Type} (f: A -> bool):
-  to_lang (char f) =1 re.to_lang (re.Char f).
-Proof.
-  move => w //=.
-  apply/exists_inP/idP => //=.
-  - case w => [|a w'].
-    + move => [src] //=.
-      by case: src; case; rewrite !inE.
-    + move => [src].
-      case: src; last by case; rewrite inE.
-      case.
-      rewrite inE => _ /= /exists_inP => [[src1]].
-      case src1; first by case.
-      case.
-      case (f a) => [_|]; last by [].
-      elim: w' => [|a2 w' IH] //=.
-      move/exists_inP.
-      by move => [src2].
-  - rewrite /lang.char /=.
-    case w => [|a [|b w']]; first by []; last by [].
-    case (f a) eqn:Hfa => [_|]; last by [].
-    exists (inl tt); first by rewrite inE.
-    apply/exists_inP => //=. 
-    rewrite Hfa.
-    exists (inr tt); first by [].
-    by rewrite inE.
-Qed.
+  Lemma char_correct (f: A -> bool):
+    to_lang (char f) =1 re.to_lang (re.Char f).
+  Proof.
+    move => w //=.
+    apply/exists_inP/idP => //=.
+    - case w => [|a w'].
+      + move => [src] //=.
+        by case: src; case; rewrite !inE.
+      + move => [src].
+        case: src; last by case; rewrite inE.
+        case.
+        rewrite inE => _ /= /exists_inP => [[src1]].
+        case src1; first by case.
+        case.
+        case (f a) => [_|]; last by [].
+        elim: w' => [|a2 w' IH] //=.
+        move/exists_inP.
+        by move => [src2].
+    - rewrite /lang.char /=.
+      case w => [|a [|b w']]; first by []; last by [].
+      case (f a) eqn:Hfa => [_|]; last by [].
+      exists (inl tt); first by rewrite inE.
+      apply/exists_inP => //=. 
+      rewrite Hfa.
+      exists (inr tt); first by [].
+      by rewrite inE.
+  Qed.
 
-Lemma cat_correct {A: Type} (n1 n2: t A):
-  to_lang (cat n1 n2) =i lang.cat (to_lang n1) (to_lang n2).
-Proof.
-  move => w.
-  by apply/of_enfaP/idP; move => H; apply/enfa_catP.
-Qed.
+  Lemma cat_correct (n1 n2: t A):
+    to_lang (cat n1 n2) =i lang.cat (to_lang n1) (to_lang n2).
+  Proof.
+    move => w.
+    by apply/of_enfaP/idP; move => H; apply/enfa_catP.
+  Qed.
 
-Lemma alt_correct {A: Type} (n1 n2: t A):
-  to_lang (alt n1 n2) =i lang.alt (to_lang n1) (to_lang n2).
-Proof.
-  move => w.
-  apply/idP/idP.
-  - case/exists_inP => [[src|src]].
-    + rewrite !inE => Hsrc Hacc.
-      apply/orP.
-      left.
-      apply/exists_inP.
-      exists src => //.
-      elim: w src {Hsrc} Hacc => /=.
-      * move => src. 
-        by rewrite inE.
-      * move => ch w IH src.
-        case/exists_inP.
-        move => [|] // s Htf /= /IH H.
+  Lemma alt_correct (n1 n2: t A):
+    to_lang (alt n1 n2) =i lang.alt (to_lang n1) (to_lang n2).
+  Proof.
+    move => w.
+    apply/idP/idP.
+    - case/exists_inP => [[src|src]].
+      + rewrite !inE => Hsrc Hacc.
+        apply/orP.
+        left.
         apply/exists_inP.
-        by exists s.
-    + rewrite !inE => Hsrc Hacc.
-      apply/orP.
-      right.
-      apply/exists_inP.
-      exists src => //.
-      elim: w src {Hsrc} Hacc => /=.
-      * move => src. 
-        by rewrite inE.
-      * move => ch w IH src.
-        case/exists_inP.
-        move => [|] // s Htf /= /IH H.
+        exists src => //.
+        elim: w src {Hsrc} Hacc => /=.
+        * move => src. 
+          by rewrite inE.
+        * move => ch w IH src.
+          case/exists_inP.
+          move => [|] // s Htf /= /IH H.
+          apply/exists_inP.
+          by exists s.
+      + rewrite !inE => Hsrc Hacc.
+        apply/orP.
+        right.
         apply/exists_inP.
-        by exists s.
-  - rewrite !inE.
-    case/orP.
-    + move/exists_inP => [start1] Hstart1 Hacc.
-      apply/exists_inP.
-      exists (inl start1).
-      rewrite inE //.
-      elim: w start1 {Hstart1} Hacc => //=.
-      * move => start1 Hstart1.
-        by rewrite inE.
-      * move => ch w IH start1.
-        move/exists_inP => [d] Htf /IH Hacc.
+        exists src => //.
+        elim: w src {Hsrc} Hacc => /=.
+        * move => src. 
+          by rewrite inE.
+        * move => ch w IH src.
+          case/exists_inP.
+          move => [|] // s Htf /= /IH H.
+          apply/exists_inP.
+          by exists s.
+    - rewrite !inE.
+      case/orP.
+      + move/exists_inP => [start1] Hstart1 Hacc.
         apply/exists_inP.
-        by exists (inl d).
-    + move/exists_inP => [start2] Hstart2 Hacc.
-      apply/exists_inP.
-      exists (inr start2).
-      rewrite inE //.
-      elim: w start2 {Hstart2} Hacc => //=.
-      * move => start2 Hstart2.
-        by rewrite inE.
-      * move => ch w IH start2.
-        move/exists_inP => [d] Htf /IH Hacc.
+        exists (inl start1).
+        rewrite inE //.
+        elim: w start1 {Hstart1} Hacc => //=.
+        * move => start1 Hstart1.
+          by rewrite inE.
+        * move => ch w IH start1.
+          move/exists_inP => [d] Htf /IH Hacc.
+          apply/exists_inP.
+          by exists (inl d).
+      + move/exists_inP => [start2] Hstart2 Hacc.
         apply/exists_inP.
-        by exists (inr d).
-Qed.
+        exists (inr start2).
+        rewrite inE //.
+        elim: w start2 {Hstart2} Hacc => //=.
+        * move => start2 Hstart2.
+          by rewrite inE.
+        * move => ch w IH start2.
+          move/exists_inP => [d] Htf /IH Hacc.
+          apply/exists_inP.
+          by exists (inr d).
+  Qed.
 
-Lemma star_correct {A: Type} (n: t A):
-  to_lang (star n) =i lang.star (to_lang n).
-Proof.
-  move => w.
-  apply/of_enfaP/idP => [H|]; by apply/enfa_starP.
-Qed.
+  Lemma star_correct (n: t A):
+    to_lang (star n) =i lang.star (to_lang n).
+  Proof.
+    move => w.
+    apply/of_enfaP/idP => [H|]; by apply/enfa_starP.
+  Qed.
+End Correctness.
 
 Section OfRe.
   Context {A: Type}.

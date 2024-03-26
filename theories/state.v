@@ -38,15 +38,6 @@ Fixpoint pset (s: tNfa): tDfa :=
   | NPlus a b => DMult (pset a) (pset b)
   end.
 
-(* Fixpoint eqbNfa {s: tNfa}: nfa⟦s⟧ -> nfa⟦s⟧ -> bool := fun a b => a == b. *)
-
-(* Fixpoint eqbNfa {s: tNfa}: nfa⟦s⟧ -> nfa⟦s⟧ -> bool. refine( *)
-(*   match s with *)
-(*   | NZero => fun _ _ => true *)
-(*   | NOne => fun a b => a == b *)
-(*   | NPlus s1 s2 => _ *)
-(*   end). *)
-
 Module StateNotations.
   Declare Scope state_scope.
   Delimit Scope state_scope with state.
