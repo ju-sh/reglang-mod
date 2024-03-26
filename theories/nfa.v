@@ -331,6 +331,15 @@ Section EnfaLemmas.
       exact: Enfa.EnfaNone (IH H). (* TODO: How .... ? *)
   Qed.
 
+  Lemma enfa_star_langI (n: t A) (w: seq A):
+    w \in to_lang n -> Enfa.accept (n:=estar n) (inl tt) w.
+  Proof.
+    case/exists_inP.
+    move => src Hin Hacc.
+    Check Enfa.EnfaNone (n:=estar n).
+    apply: (@EnfaNone enfa_star _ (Some s)) => //. exact: enfa_starI.
+  Qed.
+
   Lemma enfa_starP (n: t A) (w: seq A): reflect
     (Enfa.to_lang (estar n) w)
     (lang.star (to_lang n) w).
@@ -348,7 +357,7 @@ Section EnfaLemmas.
         rewrite /Enfa.to_lang.
         exists (inl tt).
         * by rewrite inE.
-        * 
+        * apply: enfa_star_cat. 
   Abort.
 End EnfaLemmas.
  
@@ -464,6 +473,8 @@ Lemma star_correct {A: Type} (n: t A):
 Proof.
   move => w.
   apply/of_enfaP/idP.
+  - move => H.
+    Check enfa_starP.
 Admitted.
 
 Section OfRe.
