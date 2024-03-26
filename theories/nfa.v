@@ -178,6 +178,28 @@ End Sem.
 Section EnfaLemmas.
   Context {A: Type}.
 
+  Lemma lift_accept_ne (n: t A) (src: nfa⟦state n⟧) (w: seq A):
+    src \in (start n) -> accept n src w -> Enfa.accept (n:=estar n) (inr src) w.
+  Proof.
+
+  Restart.
+    move => Hstart Hacc.
+    elim: w Hacc => //=.
+    - move => H.
+      (* apply: Enfa.EnfaFin => /=. *)
+    (* refine (Enfa.EnfaNone (n:=estar n) (inr src) (inl tt) w _ _). *)
+    (* - rewrite /=. *)
+    (* apply: Enfa.EnfaNone. *)
+  (* Restart. *)
+    (* elim: w src. *)
+    (* - rewrite /= => Hstart src H. *)
+      (* apply: Enfa.EnfaFin. *)
+      (* by rewrite inE. *)
+    (* - move => ch w IHw src Hstart H. *)
+      (* refine (Enfa.EnfaSome (n:=estar n) (inr src) ch (inl tt) w _ _). *)
+      (* + rewrite /=. *)
+  Abort.
+
   Lemma enfa_catIr (n1 n2: t A) (src: nfa⟦state n2⟧) (w: seq A)
     : accept n2 src w -> Enfa.accept (n:=ecat n1 n2) (inr src) w.
   Proof.
@@ -337,6 +359,15 @@ Section EnfaLemmas.
 
   Lemma enfa_final_unit (n: t A): inl tt \in Enfa.final (estar n).
   Proof. by rewrite inE. Qed.
+  
+  (* Goal forall (n: Enfa.t A) (s d: nfa⟦Enfa.state n⟧) (w: seq A), *)
+  (*   Enfa.accept s w -> *)
+  (*  (Enfa.tf n) None s d -> *)
+  (*   Enfa.accept d [::]. *)
+  (* Proof. *)
+  (*   move => n s d w H Htf. *)
+  (*   apply: Enfa.EnfaFin. *)
+  (*   Check (tf n) *)
 
   Lemma enfa_starI (n: t A) (w: seq A) (src: nfa⟦state n⟧):
     accept n src w ->
@@ -344,17 +375,37 @@ Section EnfaLemmas.
   Proof.
     elim: w src => /=.
     - move => src Hsrc.
-      apply: Enfa.EnfaFin.
-      Search (_ \in _).
-      move => /=.
-      rewrite inE.
-  Abort.
+      apply: (Enfa.EnfaNone (n:=estar n) (inr src) (inl tt)) => //.
+      apply: Enfa.EnfaFin. 
+      by rewrite inE.
+    - move => ch w IHw src.
+      case/exists_inP => dst Htf /IHw.
+      by exact: Enfa.EnfaSome.
+  Qed.
 
   Lemma enfa_star_langI (n: t A) (w: seq A):
     w \in to_lang n -> Enfa.accept (n:=estar n) (inl tt) w.
   Proof.
     case/exists_inP.
     move => src Hin Hacc.
+    apply: (Enfa.lift_accept (estar n) (inl tt) (inr src) w).
+    - rewrite inE.
+      Check connect1.
+      Check @connect1 _ ((Enfa.tf (estar n)) None) (inl tt) (inr src).
+      by apply: (@connect1 _ ((Enfa.tf (estar n)) None) (inl tt) (inr src)).
+    - Search accept Enfa.accept.
+      Check enfa_catIr.
+      Check (Enfa.lift_accept (estar n)).
+      apply: (Enfa.lift_accept (estar n)).
+
+      rewrite /Enfa.eps_closure.
+      Check connect_trans (connect1 _).
+      Search connect.
+      Check connect0.
+      rewrite inE.
+      rewrite /connect /=.
+      rewrite unfold_in /=.
+    apply: Enfa.lift_accept.
     apply: ((Enfa.EnfaNone (n:=estar n)) (inl tt) (inr src) w) => //.
 
     apply: (Enfa.EnfaNone (n:=estar n)).
