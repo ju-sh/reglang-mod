@@ -317,12 +317,6 @@ Section EnfaLemmas.
       exact: Enfa.EnfaNone (IH H). (* TODO: How .... ? *)
   Qed.
 
-  Lemma enfa_start_unit (n: t A): inl tt \in Enfa.start (estar n).
-  Proof. by rewrite inE. Qed.
-
-  Lemma enfa_final_unit (n: t A): inl tt \in Enfa.final (estar n).
-  Proof. by rewrite inE. Qed.
-
   Lemma enfa_starI (n: t A) (w: seq A) (src: nfa⟦state n⟧):
     accept n src w ->
     Enfa.accept (n:=estar n) (inr src) w.
