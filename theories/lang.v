@@ -71,9 +71,8 @@ Section Lang.
        all [predD l & eps] wl & w = flatten wl)
     (w \in star l).
   Proof.
-    (* TODO: ??? -2 and 1 should be same, right? And what's _.+1 *)
-    (* elim: {w} _.+1 {-2}w (ltnSn (size w)) => //. *)
-    elim: {w} _.+1 {-2}w (ltnSn (size w)); first by [].
+    (* TODO: ??? What's _.+1 *)
+    elim: {w} _.+1 {-2}w (ltnSn (size w)) => //.
     move => n IHw.
     case => /=.
     - move => Hsz.
