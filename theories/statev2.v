@@ -60,9 +60,9 @@ Defined.
 Lemma foo1 {s: t}: forall (p: pset⟦s⟧),
   reify (abstr p) = p.
 Proof.
-  elim: s => [|/= p|s1 IHs1 s2 IHs2 /= [p1 p2]].
+  elim: s => [||s1 IHs1 s2 IHs2 /= [p1 p2]].
   - by case.
-  - case: p; by case.
+  - by case; case.
   - by rewrite IHs1 IHs2.
 Qed.
 
