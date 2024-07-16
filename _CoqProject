@@ -1,0 +1,8 @@
+-R _build/default/theories aruvi
+_build/default/theories/signal.v
+_build/default/theories/hsignal.v
+_build/default/theories/events.v
+
+-R _build/default/coqci/src coqci
+
+_build/default/coqci/src/utils/hlist.v
