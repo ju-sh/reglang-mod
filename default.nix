@@ -10,7 +10,7 @@ mkShell {
   packages = (with cP; [
     coq
     hierarchy-builder
-    reglang
+    # reglang
   ]) ++ [
     dune_3 
     opam
