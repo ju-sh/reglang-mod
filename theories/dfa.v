@@ -1,9 +1,9 @@
 From mathcomp Require Import all_ssreflect.
 Set Bullet Behavior "Strict Subproofs".
 
-From aruvi Require state.
-From aruvi Require re.
-From aruvi Require nfa.
+From reglangmod Require state.
+From reglangmod Require re.
+From reglangmod Require nfa.
 Import state.StateNotations.
 
 Record t {A: Type}: Type := mkDfa {
@@ -14,6 +14,7 @@ Record t {A: Type}: Type := mkDfa {
 }.
 Arguments t: clear implicits.
 
+(*
 Definition of_nfa {A: Type} (n: nfa.t A): t A. refine {|
   state := nfa.state n;
   start := _; (* [set (nfa.start n)]; *)
@@ -58,4 +59,4 @@ Check [set: bool].
   Check [set x | x \in {set nfa⟦state⟧}].
   + exact: 
   Check [set X | X :&: nfa.final n != set0].
-
+ *)

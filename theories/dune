@@ -1,5 +1,5 @@
 (coq.theory
- (name aruvi)
- (synopsis "A coq library for streams and their hardware realisation"))
+ (name reglangmod)
+ (synopsis "Regex matching with mathcomp"))
 
 (include_subdirs qualified)

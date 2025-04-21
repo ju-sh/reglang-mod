@@ -1,6 +1,10 @@
-Replication of a part of https://github.com/coq-community/reglang/
+A modified form of a part of reglang.
+https://github.com/coq-community/reglang/
 
-An attempt to get familiar with some mathcomp stuff.
+Made as an attempt to get familiar with mathcomp.
+
+ - Atoms are boolean functions instead of symbols.
+ - NFA construction proven correct.
 
 Build with:
 

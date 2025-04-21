@@ -3,5 +3,5 @@
 
 (generate_opam_files true)
 (package
- (name aruvi)
+ (name reglangmod)
  (allow_empty))

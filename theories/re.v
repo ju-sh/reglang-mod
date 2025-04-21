@@ -1,7 +1,7 @@
 From mathcomp Require Import all_ssreflect.
 Set Bullet Behavior "Strict Subproofs".
 
-From aruvi Require lang.
+From reglangmod Require lang.
 
 Inductive t {A: Type}: Type :=
 | Eps: t

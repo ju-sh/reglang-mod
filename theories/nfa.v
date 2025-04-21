@@ -1,8 +1,8 @@
 From mathcomp Require Import all_ssreflect.
 Set Bullet Behavior "Strict Subproofs".
 
-From aruvi Require state.
-From aruvi Require re.
+From reglangmod Require state.
+From reglangmod Require re.
 Import state.StateNotations.
 
 Record t {A: Type}: Type := mkNfa {
